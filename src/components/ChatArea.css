@@ -374,10 +374,39 @@
   z-index: 1;
   opacity: 0.15;
   pointer-events: none;
-  transition: filter 0.8s ease, opacity 0.8s ease;
 }
 
-.vanta-chat-bg.blurred {
-  filter: blur(8px);
-  opacity: 0.06;
+/* Mobile Responsive Styling Overrides */
+@media (max-width: 576px) {
+  .welcome-title {
+    font-size: 1.5rem !important;
+    padding: 0 12px;
+  }
+  
+  .input-container {
+    padding: 8px 8px 12px 8px !important;
+  }
+  
+  .input-form-wrapper {
+    padding: 8px 12px !important;
+    border-radius: 20px !important;
+  }
+  
+  .chat-textarea {
+    font-size: 0.9rem !important;
+  }
+  
+  .message-row {
+    padding: 0 4px;
+  }
+
+  .message-row.user .message-bubble {
+    max-width: 85% !important;
+    padding: 8px 12px !important;
+    font-size: 0.9rem !important;
+  }
+
+  .markdown-content {
+    font-size: 0.9rem !important;
+  }
 }

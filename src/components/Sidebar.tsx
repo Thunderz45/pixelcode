@@ -84,7 +84,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const grouped = groupChats(chats);
 
   return (
-    <aside className={`sidebar ${collapsed ? "collapsed" : ""} d-flex flex-column h-100`}>
+    <aside className={`sidebar ${collapsed ? "collapsed" : "open"} d-flex flex-column h-100`}>
       <div className="sidebar-header d-flex flex-column p-3 pb-2">
         <div className="sidebar-logo text-white px-1 mb-3">
           pixelcode

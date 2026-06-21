@@ -159,10 +159,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
 
   return (
     <div className="chat-area">
-      <div 
-        id="vanta-chat-background" 
-        className={`vanta-chat-bg ${messages.length > 0 ? "blurred" : ""}`}
-      ></div>
+      <div id="vanta-chat-background" className="vanta-chat-bg"></div>
       <header className="chat-header">
         <div className="chat-header-title">
           <button className="sidebar-toggle-btn" onClick={onToggleSidebar} title="Toggle Sidebar">

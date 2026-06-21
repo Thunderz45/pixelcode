@@ -195,6 +195,9 @@ export const ChatWorkspace: React.FC = () => {
 
   return (
     <div className="workspace-container">
+      {sidebarOpen && (
+        <div className="sidebar-backdrop" onClick={toggleSidebar}></div>
+      )}
       <Sidebar
         activeChatId={activeChatId}
         chats={chats}
