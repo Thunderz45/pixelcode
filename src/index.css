@@ -1,0 +1,197 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap');
+
+:root {
+  /* ChatGPT Dark Theme Palette */
+  --bg-primary: #0d0d0d;
+  --bg-secondary: #171717;
+  --bg-tertiary: #212121;
+  --bg-input: #171717;
+  
+  --text-primary: #ececec;
+  --text-secondary: #b4b4b4;
+  --text-muted: #666666;
+  
+  --border-color: #303030;
+  --border-focus: #4d4d4d;
+  
+  --accent-green: #10b981; /* Premium subtle emerald used for highlights */
+  --accent-white: #ffffff;
+  
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'Fira Code', source-code-pro, Menlo, Monaco, Consolas, monospace;
+  
+  --transition-fast: 0.12s ease-out;
+  --transition-normal: 0.2s ease-out;
+  
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  
+  --border-radius-sm: 6px;
+  --border-radius-md: 12px;
+  --border-radius-lg: 16px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  font-family: var(--font-sans) !important;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+
+#root {
+  height: 100%;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Typography styles for markdown content */
+.markdown-content {
+  line-height: 1.6;
+  font-size: 0.975rem;
+  color: var(--text-primary);
+}
+
+.markdown-content p {
+  margin-bottom: 1rem;
+}
+
+.markdown-content p:last-child {
+  margin-bottom: 0;
+}
+
+.markdown-content h1, 
+.markdown-content h2, 
+.markdown-content h3, 
+.markdown-content h4 {
+  margin: 1.5rem 0 1rem 0;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.markdown-content h1:first-child,
+.markdown-content h2:first-child,
+.markdown-content h3:first-child {
+  margin-top: 0;
+}
+
+.markdown-content code {
+  font-family: var(--font-mono);
+  background-color: rgba(255, 255, 255, 0.06);
+  padding: 0.2rem 0.4rem;
+  border-radius: var(--border-radius-sm);
+  font-size: 0.85rem;
+}
+
+.markdown-content pre {
+  margin: 1.2rem 0;
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+.markdown-content pre code {
+  display: block;
+  padding: 1.2rem;
+  overflow-x: auto;
+  background-color: #0d0d0d;
+  border: none;
+  font-size: 0.875rem;
+}
+
+.markdown-content ul, 
+.markdown-content ol {
+  margin: 0 0 1rem 1.5rem;
+}
+
+.markdown-content li {
+  margin-bottom: 0.4rem;
+}
+
+.markdown-content a {
+  color: #ffffff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: var(--transition-fast);
+}
+
+.markdown-content a:hover {
+  color: var(--text-secondary);
+}
+
+.markdown-content blockquote {
+  border-left: 3px solid var(--text-secondary);
+  padding-left: 1rem;
+  margin: 1rem 0;
+  color: var(--text-secondary);
+}
+
+/* Bootstrap overrides to match carbon palette */
+.card {
+  background-color: var(--bg-secondary) !important;
+  border-color: var(--border-color) !important;
+}
+
+.form-control {
+  background-color: var(--bg-tertiary) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.form-control:focus {
+  background-color: var(--bg-tertiary) !important;
+  border-color: var(--border-focus) !important;
+  box-shadow: 0 0 0 1px var(--border-focus) !important;
+  color: #ffffff !important;
+}
+
+.btn-light {
+  background-color: var(--accent-white) !important;
+  color: #0d0d0d !important;
+  border: none !important;
+  font-weight: 500 !important;
+}
+
+.btn-light:hover {
+  background-color: #e2e2e2 !important;
+}
+
+.btn-outline-secondary {
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.btn-outline-secondary:hover {
+  background-color: var(--bg-tertiary) !important;
+  color: #ffffff !important;
+}
