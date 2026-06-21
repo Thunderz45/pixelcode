@@ -21,12 +21,20 @@ If the user asks about ANYTHING else (including general knowledge, news, creativ
     ...messages.map(m => ({ role: m.role, content: m.content }))
   ];
 
-  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+  const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+  
+  const url = isLocalhost ? "https://api.groq.com/openai/v1/chat/completions" : "/api/chat";
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json"
+  };
+  
+  if (isLocalhost) {
+    headers["Authorization"] = `Bearer ${apiKey}`;
+  }
+
+  const response = await fetch(url, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${apiKey}`
-    },
+    headers,
     body: JSON.stringify({
       model: model,
       messages: apiMessages,
