@@ -22,7 +22,7 @@ import {
   ChevronRight
 } from "lucide-react";
 import { auth } from "../firebase";
-import type { ChatSession } from "../services/db";
+import type { ChatSession, UserProfile } from "../services/db";
 import "./Sidebar.css";
 
 interface SidebarProps {
@@ -32,6 +32,8 @@ interface SidebarProps {
   onNewChat: () => void;
   onDeleteChat: (id: string, e: React.MouseEvent) => void;
   collapsed?: boolean;
+  profile: UserProfile | null;
+  onOpenBilling: () => void;
 }
 
 interface GroupedChats {
@@ -45,6 +47,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onNewChat,
   onDeleteChat,
   collapsed = false,
+  profile,
+  onOpenBilling,
 }) => {
   const user = auth.currentUser;
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -262,7 +266,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <span>Report an issue</span>
               </button>
               
-              <button className="dropdown-item d-flex align-items-center gap-3">
+              <button
+                className="dropdown-item d-flex align-items-center gap-3"
+                onClick={() => {
+                  onOpenBilling();
+                  setShowProfileMenu(false);
+                }}
+              >
                 <CreditCard size={16} />
                 <span>Manage Billing</span>
               </button>
@@ -289,14 +299,49 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
         )}
         
+        {/* Usage Progress Meter Bar */}
+        {profile && (
+          <div className="usage-meter-container mb-3" onClick={onOpenBilling}>
+            <div className="usage-meter-header d-flex justify-content-between align-items-center mb-1">
+              <span className="usage-meter-title">
+                {profile.isSubscribed ? "Pro Unlimited" : "Free Chats Used"}
+              </span>
+              <span className="usage-meter-count">
+                {profile.isSubscribed ? "∞" : `${profile.messageCount} / 25`}
+              </span>
+            </div>
+            {!profile.isSubscribed && (
+              <>
+                <div className="usage-meter-progress-bg">
+                  <div 
+                    className="usage-meter-progress-bar" 
+                    style={{ width: `${Math.min((profile.messageCount / 25) * 100, 100)}%` }}
+                  ></div>
+                </div>
+                <div className="usage-meter-footer mt-1 text-center">
+                  Upgrade for unlimited access
+                </div>
+              </>
+            )}
+            {profile.isSubscribed && (
+              <div className="usage-meter-pro-subtitle mt-0.5 text-success small">
+                Unlimited chats active
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="profile-card" onClick={() => setShowProfileMenu(!showProfileMenu)}>
-          <div className="profile-avatar">
+          <div className="profile-avatar" style={profile?.isSubscribed ? { background: "linear-gradient(90deg, #6366f1, #06b6d4)" } : undefined}>
             {getInitials()}
           </div>
-          <div className="profile-info">
-            <div className="profile-email">
+          <div className="profile-info d-flex align-items-center overflow-hidden">
+            <div className="profile-email text-truncate flex-grow-1" style={{ marginRight: "6px" }}>
               {user?.email || "anon@developer.com"}
             </div>
+            {profile?.isSubscribed && (
+              <span className="pro-badge">PRO</span>
+            )}
           </div>
           <div className="profile-arrow">
             <ChevronsUpDown size={16} />

@@ -7,8 +7,12 @@ import {
   type ChatSession, 
   saveChatSession, 
   subscribeToChats, 
-  deleteChatSession 
+  deleteChatSession,
+  type UserProfile,
+  subscribeToUserProfile,
+  incrementMessageCount
 } from "../services/db";
+import { SubscriptionModal } from "./SubscriptionModal";
 import "./ChatWorkspace.css";
 
 export const ChatWorkspace: React.FC = () => {
@@ -20,6 +24,25 @@ export const ChatWorkspace: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [abortController, setAbortController] = useState<AbortController | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [isBillingOpen, setIsBillingOpen] = useState(false);
+
+  // Clear state when userId changes to prevent bleed
+  useEffect(() => {
+    setChats([]);
+    setActiveChatId(null);
+    setProfile(null);
+  }, [userId]);
+
+  // Subscribe to user usage and subscription profile details
+  useEffect(() => {
+    const unsubscribe = subscribeToUserProfile(userId, (updatedProfile) => {
+      setProfile(updatedProfile);
+    });
+    return () => {
+      unsubscribe();
+    };
+  }, [userId]);
 
   // Subscribe to real-time chats from database
   useEffect(() => {
@@ -126,6 +149,12 @@ export const ChatWorkspace: React.FC = () => {
   };
 
   const handleSendMessage = async (content: string) => {
+    // Check if free user limit is reached
+    if (profile && !profile.isSubscribed && profile.messageCount >= 25) {
+      setIsBillingOpen(true);
+      return;
+    }
+
     const currentId = activeChatId || Math.random().toString(36).substring(2, 15);
     if (!activeChatId) {
       setActiveChatId(currentId);
@@ -145,6 +174,9 @@ export const ChatWorkspace: React.FC = () => {
 
     // Optimistically save user message
     await saveChatSession(userId, currentId, currentTitle, newMessages);
+
+    // Increment usage message count
+    await incrementMessageCount(userId);
 
     setIsLoading(true);
     const controller = new AbortController();
@@ -245,6 +277,8 @@ export const ChatWorkspace: React.FC = () => {
         onNewChat={handleNewChat}
         onDeleteChat={handleDeleteChat}
         collapsed={!sidebarOpen}
+        profile={profile}
+        onOpenBilling={() => setIsBillingOpen(true)}
       />
 
       <main className="workspace-content">
@@ -258,6 +292,12 @@ export const ChatWorkspace: React.FC = () => {
           onDeleteMessage={handleDeleteMessage}
         />
       </main>
+
+      <SubscriptionModal
+        isOpen={isBillingOpen}
+        onClose={() => setIsBillingOpen(false)}
+        userId={userId}
+      />
     </div>
   );
 };
