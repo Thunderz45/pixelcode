@@ -121,7 +121,7 @@ export const ChatWorkspace: React.FC = () => {
       })
     );
 
-    await saveChatSession(userId, activeChatId, activeChat.title, updatedMessages);
+    await saveChatSession(userId, activeChatId, activeChat.title, updatedMessages, activeChat.agent);
   };
 
   const handleRegenerateMessage = async (messageId: string) => {
@@ -144,7 +144,7 @@ export const ChatWorkspace: React.FC = () => {
       })
     );
 
-    await saveChatSession(userId, activeChatId, activeChat.title, messagesToKeep);
+    await saveChatSession(userId, activeChatId, activeChat.title, messagesToKeep, activeChat.agent);
     await handleSendMessage(lastUserMessage.content);
   };
 
@@ -173,7 +173,7 @@ export const ChatWorkspace: React.FC = () => {
     const currentTitle = activeChat ? activeChat.title : (content.length > 25 ? `${content.substring(0, 25)}...` : content);
 
     // Optimistically save user message
-    await saveChatSession(userId, currentId, currentTitle, newMessages);
+    await saveChatSession(userId, currentId, currentTitle, newMessages, activeChat?.agent);
 
     // Increment usage message count
     await incrementMessageCount(userId);
@@ -235,13 +235,14 @@ export const ChatWorkspace: React.FC = () => {
             })
           );
         },
-        controller.signal
+        controller.signal,
+        activeChat?.agent
       );
 
       // Save complete session with streamed content to DB
       const finalAssistantMessage = { ...assistantMessage, content: streamedContent };
       const finalMessages = [...newMessages, finalAssistantMessage];
-      await saveChatSession(userId, currentId, currentTitle, finalMessages);
+      await saveChatSession(userId, currentId, currentTitle, finalMessages, activeChat?.agent);
     } catch (err: any) {
       if (err.name === "AbortError") {
         console.log("Streaming aborted");
@@ -253,12 +254,60 @@ export const ChatWorkspace: React.FC = () => {
           content: "Sorry, I encountered an error communicating with the Groq API. Please check your network connection or API configuration." 
         };
         const finalMessages = [...newMessages, errorAssistantMessage];
-        await saveChatSession(userId, currentId, currentTitle, finalMessages);
+        await saveChatSession(userId, currentId, currentTitle, finalMessages, activeChat?.agent);
       }
     } finally {
       setIsLoading(false);
       setAbortController(null);
     }
+  };
+
+  const handleSelectAgent = async (agent: 'frontend' | 'backend' | 'fullstack' | 'general') => {
+    const newId = Math.random().toString(36).substring(2, 15);
+    setActiveChatId(newId);
+
+    if (window.innerWidth <= 768) {
+      setSidebarOpen(false);
+    }
+
+    let welcomeText = "";
+    let title = "";
+
+    if (agent === "frontend") {
+      welcomeText = "Hello! I am your Frontend Developer Assistant. Ask me anything about React, CSS, Tailwind, TypeScript, modern UI design, animations, or browser performance.";
+      title = "Frontend Assistant";
+    } else if (agent === "backend") {
+      welcomeText = "Hello! I am your Backend Developer Assistant. Ask me anything about APIs, databases (SQL/NoSQL), server architecture, authentication, or Docker/DevOps.";
+      title = "Backend Assistant";
+    } else if (agent === "fullstack") {
+      welcomeText = "Hello! I am your Fullstack Developer Assistant. I can help you with end-to-end applications, deployments (Vercel, AWS), system architectures, or integrations.";
+      title = "Fullstack Assistant";
+    } else {
+      welcomeText = "Hello! How can I help you code today?";
+      title = "Developer Assistant";
+    }
+
+    const assistantMessage: Message = {
+      id: Math.random().toString(36).substring(2, 15),
+      role: "assistant",
+      content: welcomeText,
+      timestamp: Date.now(),
+    };
+
+    const session: ChatSession = {
+      id: newId,
+      title,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      messages: [assistantMessage],
+      agent,
+    };
+
+    // Optimistically update the chats list locally
+    setChats((prevChats) => [session, ...prevChats]);
+
+    // Save session with agent data to DB
+    await saveChatSession(userId, newId, title, [assistantMessage], agent);
   };
 
   const toggleSidebar = () => {
@@ -279,6 +328,8 @@ export const ChatWorkspace: React.FC = () => {
         collapsed={!sidebarOpen}
         profile={profile}
         onOpenBilling={() => setIsBillingOpen(true)}
+        activeAgent={activeChat?.agent || 'general'}
+        onSelectAgent={handleSelectAgent}
       />
 
       <main className="workspace-content">

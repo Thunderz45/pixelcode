@@ -19,7 +19,10 @@ import {
   CreditCard,
   Settings,
   Briefcase,
-  ChevronRight
+  ChevronRight,
+  Code,
+  Database,
+  Layers
 } from "lucide-react";
 import { auth } from "../firebase";
 import type { ChatSession, UserProfile } from "../services/db";
@@ -34,6 +37,8 @@ interface SidebarProps {
   collapsed?: boolean;
   profile: UserProfile | null;
   onOpenBilling: () => void;
+  activeAgent?: 'frontend' | 'backend' | 'fullstack' | 'general';
+  onSelectAgent: (agent: 'frontend' | 'backend' | 'fullstack' | 'general') => void;
 }
 
 interface GroupedChats {
@@ -49,6 +54,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   collapsed = false,
   profile,
   onOpenBilling,
+  activeAgent = 'general',
+  onSelectAgent,
 }) => {
   const user = auth.currentUser;
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -139,25 +146,34 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="agents-section mb-4">
           <h2 className="chat-list-title">Agents</h2>
           
-          <div className="sidebar-menu-item">
-            <div className="agent-icon-wrapper bg-success text-white">
-              <Search size={12} />
-            </div>
-            <span>Research Agent</span>
-          </div>
-          
-          <div className="sidebar-menu-item">
+          <div 
+            className={`sidebar-menu-item ${activeAgent === "frontend" ? "active" : ""}`}
+            onClick={() => onSelectAgent("frontend")}
+          >
             <div className="agent-icon-wrapper bg-primary text-white">
-              <Users size={12} />
+              <Code size={12} />
             </div>
-            <span>CRM Manager</span>
+            <span>Frontend Agent</span>
           </div>
           
-          <div className="sidebar-menu-item">
-            <div className="agent-icon-wrapper bg-warning text-white">
-              <TrendingUp size={12} />
+          <div 
+            className={`sidebar-menu-item ${activeAgent === "backend" ? "active" : ""}`}
+            onClick={() => onSelectAgent("backend")}
+          >
+            <div className="agent-icon-wrapper bg-success text-white">
+              <Database size={12} />
             </div>
-            <span>Sales Coach</span>
+            <span>Backend Agent</span>
+          </div>
+          
+          <div 
+            className={`sidebar-menu-item ${activeAgent === "fullstack" ? "active" : ""}`}
+            onClick={() => onSelectAgent("fullstack")}
+          >
+            <div className="agent-icon-wrapper bg-warning text-white">
+              <Layers size={12} />
+            </div>
+            <span>Fullstack Agent</span>
           </div>
 
           <a

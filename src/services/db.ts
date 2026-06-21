@@ -8,6 +8,7 @@ export interface ChatSession {
   createdAt: number;
   updatedAt: number;
   messages: Message[];
+  agent?: 'frontend' | 'backend' | 'fullstack' | 'general';
 }
 
 const getChatsLocalStorageKey = (userId: string) => `pixelcode_chats_${userId}`;
@@ -53,7 +54,8 @@ export async function saveChatSession(
   userId: string,
   chatId: string,
   title: string,
-  messages: Message[]
+  messages: Message[],
+  agent?: 'frontend' | 'backend' | 'fullstack' | 'general'
 ): Promise<void> {
   const session: ChatSession = {
     id: chatId,
@@ -61,6 +63,7 @@ export async function saveChatSession(
     createdAt: Date.now(),
     updatedAt: Date.now(),
     messages,
+    agent,
   };
 
   // Always save locally first for instant updates & fallback
