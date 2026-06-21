@@ -1,3 +1,9 @@
+declare const process: {
+  env: {
+    GROQ_API_KEY?: string;
+  };
+};
+
 export const config = {
   runtime: 'edge',
 };
