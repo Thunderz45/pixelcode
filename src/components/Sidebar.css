@@ -236,3 +236,59 @@
   background-color: rgba(255, 255, 255, 0.05);
   color: #ffffff;
 }
+
+.profile-dropdown-menu .dropdown-item.text-danger {
+  color: #ef4444;
+}
+
+.profile-dropdown-menu .dropdown-item.text-danger:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+.dropdown-profile-header {
+  border-bottom: 1px solid #2d2d2d;
+  margin-bottom: 4px;
+}
+
+.dropdown-profile-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #3b82f6;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.dropdown-profile-details {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.dropdown-profile-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.dropdown-profile-email {
+  font-size: 0.75rem;
+  color: #888888;
+}
+
+.dropdown-menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background-color: #2d2d2d;
+  margin: 6px 8px;
+}

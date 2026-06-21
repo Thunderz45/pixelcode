@@ -410,3 +410,133 @@
     font-size: 0.9rem !important;
   }
 }
+
+/* Chat header actions & dropdown styles */
+.chat-header-dropdown-trigger {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.chat-header-dropdown-trigger:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.chat-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-action-btn {
+  background: transparent;
+  border: none;
+  color: #b4b4b4;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.header-action-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+}
+
+/* Collapsible reasoning accordion & bubble actions */
+.reasoning-accordion {
+  margin-top: 4px;
+}
+
+.reasoning-toggle-btn {
+  background: transparent;
+  border: none;
+  color: #888888;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 0;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+
+.reasoning-toggle-btn:hover {
+  color: #ececec;
+}
+
+.reasoning-content {
+  background-color: rgba(255, 255, 255, 0.03);
+  border-left: 2px solid #333333;
+  color: #a4a4a4;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  padding: 10px 14px;
+  font-style: italic;
+  font-family: var(--font-sans);
+  text-align: left;
+}
+
+.assistant-message-actions {
+  opacity: 0.3;
+  transition: opacity 0.2s;
+}
+
+.message-row:hover .assistant-message-actions {
+  opacity: 1;
+}
+
+.message-action-btn-circle {
+  background: transparent;
+  border: none;
+  color: #888888;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.message-action-btn-circle:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+}
+
+/* Scroll-to-bottom floating button */
+.scroll-bottom-btn {
+  position: absolute;
+  bottom: 145px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: #171717;
+  border: 1px solid #2d2d2d;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  z-index: 15;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  transition: background-color 0.2s, opacity 0.2s;
+}
+
+.scroll-bottom-btn:hover {
+  background-color: #242424;
+  color: #ffffff;
+}
+

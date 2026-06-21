@@ -85,6 +85,46 @@ export const ChatWorkspace: React.FC = () => {
     await deleteChatSession(userId, id);
   };
 
+  const handleDeleteMessage = async (messageId: string) => {
+    if (!activeChatId || !activeChat) return;
+    const updatedMessages = activeChat.messages.filter((m) => m.id !== messageId);
+    
+    setChats(prevChats => 
+      prevChats.map(c => {
+        if (c.id === activeChatId) {
+          return { ...c, messages: updatedMessages };
+        }
+        return c;
+      })
+    );
+
+    await saveChatSession(userId, activeChatId, activeChat.title, updatedMessages);
+  };
+
+  const handleRegenerateMessage = async (messageId: string) => {
+    if (!activeChatId || !activeChat || isLoading) return;
+    const msgIndex = activeChat.messages.findIndex((m) => m.id === messageId);
+    if (msgIndex === -1) return;
+
+    const previousMessages = activeChat.messages.slice(0, msgIndex);
+    const lastUserMessage = previousMessages.filter((m) => m.role === "user").pop();
+    if (!lastUserMessage) return;
+
+    const messagesToKeep = activeChat.messages.slice(0, activeChat.messages.indexOf(lastUserMessage));
+    
+    setChats(prevChats => 
+      prevChats.map(c => {
+        if (c.id === activeChatId) {
+          return { ...c, messages: messagesToKeep };
+        }
+        return c;
+      })
+    );
+
+    await saveChatSession(userId, activeChatId, activeChat.title, messagesToKeep);
+    await handleSendMessage(lastUserMessage.content);
+  };
+
   const handleSendMessage = async (content: string) => {
     const currentId = activeChatId || Math.random().toString(36).substring(2, 15);
     if (!activeChatId) {
@@ -214,6 +254,8 @@ export const ChatWorkspace: React.FC = () => {
           isLoading={isLoading}
           onSendMessage={handleSendMessage}
           onToggleSidebar={toggleSidebar}
+          onRegenerateMessage={handleRegenerateMessage}
+          onDeleteMessage={handleDeleteMessage}
         />
       </main>
     </div>
