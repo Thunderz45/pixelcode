@@ -165,9 +165,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
           <button className="sidebar-toggle-btn" onClick={onToggleSidebar} title="Toggle Sidebar">
             <PanelLeft size={20} />
           </button>
-          {messages.length > 0 && (
-            <span className="chat-header-name">{chatTitle || "New Conversation"}</span>
-          )}
+          <span className="chat-header-name">{messages.length > 0 ? (chatTitle || "pixelcode") : "pixelcode"}</span>
         </div>
       </header>
 
