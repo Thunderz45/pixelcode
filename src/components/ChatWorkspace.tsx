@@ -31,20 +31,41 @@ export const ChatWorkspace: React.FC = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
 
   // New enhancements states
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
+  const [projects, setProjects] = useState<Project[]>(() => {
+    try {
+      const currentUid = auth.currentUser?.uid || "guest";
+      const data = localStorage.getItem(`pixelcode_projects_${currentUid}`);
+      return data ? JSON.parse(data) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [activeProjectId, setActiveProjectId] = useState<string | null>(() => {
+    try {
+      const currentUid = auth.currentUser?.uid || "guest";
+      return localStorage.getItem(`pixelcode_active_project_id_${currentUid}`);
+    } catch {
+      return null;
+    }
+  });
   const [selectedModel, setSelectedModel] = useState<'pro' | 'high' | 'low'>('pro');
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [infoModalOpen, setInfoModalOpen] = useState(false);
   const [infoModalMode, setInfoModalMode] = useState<'tools' | 'workflow' | 'project' | 'preferences' | 'theme' | 'language' | 'shortcuts' | 'report' | 'workspace' | null>(null);
 
-  // Clear state when userId changes to prevent bleed
+  // Sync state when userId changes to prevent bleed and load correct local fallback
   useEffect(() => {
     setChats([]);
     setActiveChatId(null);
     setProfile(null);
-    setProjects([]);
-    setActiveProjectId(null);
+    try {
+      const data = localStorage.getItem(`pixelcode_projects_${userId}`);
+      setProjects(data ? JSON.parse(data) : []);
+      setActiveProjectId(localStorage.getItem(`pixelcode_active_project_id_${userId}`));
+    } catch {
+      setProjects([]);
+      setActiveProjectId(null);
+    }
     setSelectedModel('pro');
     setSettingsOpen(false);
     setInfoModalOpen(false);
@@ -89,6 +110,15 @@ export const ChatWorkspace: React.FC = () => {
 
   const handleSelectProject = (projectId: string | null) => {
     setActiveProjectId(projectId);
+    try {
+      if (projectId) {
+        localStorage.setItem(`pixelcode_active_project_id_${userId}`, projectId);
+      } else {
+        localStorage.removeItem(`pixelcode_active_project_id_${userId}`);
+      }
+    } catch (e) {
+      console.error("Failed to save active project id:", e);
+    }
     const projectChats = projectId 
       ? chats.filter((c) => c.projectId === projectId)
       : chats;
@@ -360,6 +390,11 @@ export const ChatWorkspace: React.FC = () => {
     // Optimistically update projects state instantly
     setProjects(prev => [newProj, ...prev]);
     setActiveProjectId(projId);
+    try {
+      localStorage.setItem(`pixelcode_active_project_id_${userId}`, projId);
+    } catch (e) {
+      console.error("Failed to save active project id:", e);
+    }
     setActiveChatId(null);
     await saveProject(userId, projId, name);
   };
