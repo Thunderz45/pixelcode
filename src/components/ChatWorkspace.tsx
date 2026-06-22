@@ -347,14 +347,24 @@ export const ChatWorkspace: React.FC = () => {
 
   const handleCreateProject = async (name: string) => {
     const projId = Math.random().toString(36).substring(2, 15);
-    await saveProject(userId, projId, name);
+    const newProj: Project = {
+      id: projId,
+      name,
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    };
+    // Optimistically update projects state instantly
+    setProjects(prev => [newProj, ...prev]);
     setActiveProjectId(projId);
     setActiveChatId(null);
+    await saveProject(userId, projId, name);
   };
 
   const handleDeleteProject = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (confirm("Are you sure you want to delete this project and all its chats?")) {
+      // Optimistically update projects state instantly
+      setProjects(prev => prev.filter(p => p.id !== id));
       const chatsToDelete = chats.filter((c) => c.projectId === id);
       for (const chat of chatsToDelete) {
         await deleteChatSession(userId, chat.id);

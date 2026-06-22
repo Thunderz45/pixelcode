@@ -40,13 +40,35 @@ export interface UserProfile {
 }
 
 /**
- * Saves a project to Firestore.
+ * Saves a project to Firestore with localStorage fallback.
  */
 export async function saveProject(
   userId: string,
   projectId: string,
   name: string
 ): Promise<void> {
+  // Save to local storage first for instant updates & offline fallback
+  const localKey = `pixelcode_projects_${userId}`;
+  try {
+    const existingRaw = localStorage.getItem(localKey);
+    const existing: Project[] = existingRaw ? JSON.parse(existingRaw) : [];
+    const idx = existing.findIndex(p => p.id === projectId);
+    const updatedProj: Project = {
+      id: projectId,
+      name,
+      createdAt: idx >= 0 ? existing[idx].createdAt : Date.now(),
+      updatedAt: Date.now()
+    };
+    if (idx >= 0) {
+      existing[idx] = updatedProj;
+    } else {
+      existing.unshift(updatedProj);
+    }
+    localStorage.setItem(localKey, JSON.stringify(existing));
+  } catch (e) {
+    console.error("Failed to save project locally:", e);
+  }
+
   if (!userId || userId === "guest") return;
 
   try {
@@ -65,19 +87,27 @@ export async function saveProject(
     }, { merge: true });
   } catch (err) {
     console.error("Failed to save project in Firestore:", err);
-    throw err;
   }
 }
 
 /**
- * Subscribes to projects in real-time.
+ * Subscribes to projects in real-time with localStorage fallback.
  */
 export function subscribeToProjects(
   userId: string,
   onUpdate: (projects: Project[]) => void
 ): () => void {
+  const getLocalProjects = (): Project[] => {
+    try {
+      const data = localStorage.getItem(`pixelcode_projects_${userId}`);
+      return data ? JSON.parse(data) : [];
+    } catch {
+      return [];
+    }
+  };
+
   if (!userId || userId === "guest") {
-    onUpdate([]);
+    onUpdate(getLocalProjects());
     return () => {};
   }
 
@@ -96,25 +126,46 @@ export function subscribeToProjects(
             updatedAt: data.updatedAt || Date.now(),
           });
         });
-        // Sort by name or updatedAt
-        onUpdate(list.sort((a, b) => b.updatedAt - a.updatedAt));
+        const sorted = list.sort((a, b) => b.updatedAt - a.updatedAt);
+        // Backup to local storage
+        try {
+          localStorage.setItem(`pixelcode_projects_${userId}`, JSON.stringify(sorted));
+        } catch (e) {
+          console.error("Local storage projects backup failed:", e);
+        }
+        onUpdate(sorted);
       },
       (err) => {
-        console.error("Firestore subscribeToProjects error:", err);
+        console.error("Firestore subscribeToProjects error, falling back to localStorage:", err);
+        onUpdate(getLocalProjects());
       }
     );
 
     return unsubscribe;
   } catch (err) {
-    console.error("Firestore subscribeToProjects failed:", err);
+    console.error("Firestore subscribeToProjects failed, falling back to localStorage:", err);
+    onUpdate(getLocalProjects());
     return () => {};
   }
 }
 
 /**
- * Deletes a project from Firestore.
+ * Deletes a project from Firestore with localStorage fallback.
  */
 export async function deleteProject(userId: string, projectId: string): Promise<void> {
+  // Delete from local storage
+  const localKey = `pixelcode_projects_${userId}`;
+  try {
+    const existingRaw = localStorage.getItem(localKey);
+    if (existingRaw) {
+      const existing: Project[] = JSON.parse(existingRaw);
+      const filtered = existing.filter(p => p.id !== projectId);
+      localStorage.setItem(localKey, JSON.stringify(filtered));
+    }
+  } catch (e) {
+    console.error("Failed to delete project locally:", e);
+  }
+
   if (!userId || userId === "guest") return;
 
   try {
@@ -122,7 +173,6 @@ export async function deleteProject(userId: string, projectId: string): Promise<
     await deleteDoc(projectDocRef);
   } catch (err) {
     console.error("Failed to delete project from Firestore:", err);
-    throw err;
   }
 }
 
