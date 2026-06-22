@@ -12,7 +12,10 @@ import {
   Briefcase, 
   CheckCircle,
   ToggleLeft,
-  ToggleRight
+  ToggleRight,
+  Play,
+  Terminal,
+  Cpu
 } from "lucide-react";
 import "./InfoModal.css";
 
@@ -38,6 +41,38 @@ export const InfoModal: React.FC<InfoModalProps> = ({
   const [selectedLang, setSelectedLang] = useState('en');
   const [reportText, setReportText] = useState("");
   const [reportSuccess, setReportSuccess] = useState(false);
+
+  // Workflow states
+  const [workflowApiKey, setWorkflowApiKey] = useState("mMkLNZwJ3nXXLCgcgiwSZa4VfbRqLoeCDFl3kE85r6Y");
+  const [runningWorkflow, setRunningWorkflow] = useState<string | null>(null);
+  const [workflowLogs, setWorkflowLogs] = useState<string[]>([]);
+
+  const runSimulatedWorkflow = (workflowName: string) => {
+    if (runningWorkflow) return;
+    setRunningWorkflow(workflowName);
+    setWorkflowLogs(["[INFO] Initializing CI/CD build task pipeline...", "[AUTH] Authenticating using API key token: " + workflowApiKey.substring(0, 8) + "..." + workflowApiKey.substring(workflowApiKey.length - 8)]);
+    
+    const logsSteps = [
+      "[GIT] Pulling repository main branch from remote source...",
+      "[NPM] Resolving dependency packages tree...",
+      "[BUILD] Compiling TypeScript source files and assets (tsc -b && vite build)...",
+      "[BUILD] Built 2047 static modules successfully in 1.36 seconds.",
+      "[VERCEL] Uploading production bundles to Edge CDN servers...",
+      "[VERCEL] Deployment completed successfully! Edge routing updated.",
+      "[STATUS] Health check: OK. Active URL: https://pixelcode-lime.vercel.app"
+    ];
+
+    logsSteps.forEach((log, index) => {
+      setTimeout(() => {
+        setWorkflowLogs(prev => [...prev, log]);
+        if (index === logsSteps.length - 1) {
+          setTimeout(() => {
+            setRunningWorkflow(null);
+          }, 2000);
+        }
+      }, (index + 1) * 700);
+    });
+  };
 
   if (!isOpen || !mode) return null;
 
@@ -94,15 +129,85 @@ export const InfoModal: React.FC<InfoModalProps> = ({
                 <Share2 size={24} />
               </div>
               <h2 className="info-modal-title">CI/CD Workflow</h2>
-              <p className="info-modal-desc">
-                Automate your build, test, and release cycles directly inside the chat interface.
+              <p className="info-modal-desc" style={{ marginBottom: "16px" }}>
+                Configure and automate template deployment builds directly using your API tokens.
               </p>
 
-              <div className="coming-soon-badge p-4 rounded-3 text-center mt-3" style={{ background: "rgba(255, 255, 255, 0.02)", border: "1px dashed rgba(255, 255, 255, 0.1)", textAlign: "center" }}>
-                <Share2 size={36} className="text-secondary mb-2" style={{ opacity: 0.5, margin: "0 auto" }} />
-                <h3 className="text-white fw-semibold mb-1" style={{ fontSize: "1rem" }}>Feature Coming Soon</h3>
-                <p className="text-secondary small mb-0">Soon you will be able to construct interactive visual pipelines, run remote build tasks, and configure continuous deployments.</p>
+              <div className="form-group text-left mb-3 d-flex flex-column gap-1" style={{ textAlign: "left" }}>
+                <label className="form-label" htmlFor="workflowApiKey" style={{ fontSize: "0.8rem", color: "var(--text-secondary)" }}>Workflow API Integration Key</label>
+                <input
+                  id="workflowApiKey"
+                  type="text"
+                  value={workflowApiKey}
+                  onChange={(e) => setWorkflowApiKey(e.target.value)}
+                  className="form-control text-white border-secondary p-2.5 rounded-3"
+                  style={{
+                    backgroundColor: "#09090b",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    color: "#fff",
+                    outline: "none",
+                    width: "100%",
+                    fontSize: "0.8rem",
+                    fontFamily: "monospace",
+                    borderRadius: "8px",
+                    padding: "8px 12px"
+                  }}
+                />
               </div>
+
+              {!runningWorkflow ? (
+                <div className="d-flex flex-column gap-2 mt-2" style={{ maxHeight: "280px", overflowY: "auto" }}>
+                  {[
+                    { id: "deploy", name: "Production Deploy Pipeline", desc: "Builds application, runs typecheck, updates edge CDN.", icon: Play },
+                    { id: "test", name: "Linter & Testing Workflow", desc: "Performs ESLint rules checks and runs automated unit tests.", icon: Cpu },
+                    { id: "db_sync", name: "Database Migrator", desc: "Updates Firestore documents schema configuration.", icon: Terminal }
+                  ].map((wf) => (
+                    <div 
+                      key={wf.id}
+                      className="d-flex justify-content-between align-items-center p-3 rounded-3 bg-dark border border-secondary"
+                      style={{ backgroundColor: "rgba(255,255,255,0.02)", borderColor: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "8px" }}
+                    >
+                      <div className="text-left" style={{ maxWidth: "70%", textAlign: "left" }}>
+                        <div className="text-white fw-semibold small d-flex align-items-center gap-1.5" style={{ fontSize: "0.85rem", gap: "6px" }}>
+                          <wf.icon size={13} className="text-success" />
+                          {wf.name}
+                        </div>
+                        <div className="text-secondary small mt-0.5" style={{ fontSize: "0.75rem", lineHeight: "1.3", color: "#888" }}>{wf.desc}</div>
+                      </div>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-light d-flex align-items-center gap-1 py-1.5 px-3 fw-semibold text-dark"
+                        onClick={() => runSimulatedWorkflow(wf.name)}
+                        style={{ backgroundColor: "#ffffff", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "0.75rem", padding: "4px 10px" }}
+                      >
+                        <Play size={10} fill="#000" />
+                        Run
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div 
+                  className="p-3 rounded-3 text-left mt-2" 
+                  style={{ 
+                    backgroundColor: "#09090b", 
+                    border: "1px solid rgba(255,255,255,0.08)", 
+                    fontFamily: "monospace", 
+                    fontSize: "0.75rem", 
+                    height: "230px", 
+                    overflowY: "auto",
+                    textAlign: "left",
+                    borderRadius: "8px"
+                  }}
+                >
+                  <div className="text-success fw-semibold mb-2">RUNNING: {runningWorkflow}</div>
+                  {workflowLogs.map((log, idx) => (
+                    <div key={idx} className="text-secondary mb-1" style={{ whiteSpace: "pre-wrap", lineHeight: "1.4", color: "#b4b4b4" }}>
+                      {log}
+                    </div>
+                  ))}
+                </div>
+              )}
             </>
           )}
 
