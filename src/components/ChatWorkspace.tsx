@@ -208,7 +208,11 @@ export const ChatWorkspace: React.FC = () => {
 
     // Optimistically save user message
     const targetProjectId = activeChat?.projectId || activeProjectId || undefined;
-    await saveChatSession(userId, currentId, currentTitle, newMessages, activeChat?.agent, targetProjectId);
+    try {
+      await saveChatSession(userId, currentId, currentTitle, newMessages, activeChat?.agent, targetProjectId);
+    } catch (err) {
+      console.error("Failed to save optimistic chat session to Firestore:", err);
+    }
 
     // No credits system active: message count / credit decrement logic removed
 
