@@ -5,6 +5,8 @@ import {
   Send, 
   PanelLeft, 
   Code, 
+  Database,
+  Layers,
   Mic, 
   MicOff, 
   ChevronDown, 
@@ -33,6 +35,7 @@ interface ChatAreaProps {
   onOpenSettings: () => void;
   selectedModel: 'pro' | 'high' | 'low';
   onChangeModel: (model: 'pro' | 'high' | 'low') => void;
+  activeAgent: 'frontend' | 'backend' | 'fullstack' | 'general';
 }
 
 export const ChatArea: React.FC<ChatAreaProps> = ({
@@ -47,8 +50,23 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
   onOpenSettings,
   selectedModel,
   onChangeModel,
+  activeAgent,
 }) => {
   const [input, setInput] = useState("");
+
+  const getAgentDetails = () => {
+    switch (activeAgent) {
+      case 'frontend':
+        return { name: 'Frontend Agent', color: '#3b82f6', icon: Code, className: 'agent-frontend' };
+      case 'backend':
+        return { name: 'Backend Agent', color: '#10b981', icon: Database, className: 'agent-backend' };
+      case 'fullstack':
+        return { name: 'Fullstack Agent', color: '#f59e0b', icon: Layers, className: 'agent-fullstack' };
+      default:
+        return null;
+    }
+  };
+  const agentDetails = getAgentDetails();
   const [isListening, setIsListening] = useState(false);
   const [expandedReasoning, setExpandedReasoning] = useState<Record<string, boolean>>({});
   const [showScrollBottom, setShowScrollBottom] = useState(false);
@@ -269,6 +287,20 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
             </span>
             <ChevronDown size={14} className="text-muted" />
           </div>
+          {agentDetails && (
+            <span 
+              className="ms-2 px-2 py-0.5 rounded text-white fw-semibold d-inline-flex align-items-center gap-1"
+              style={{ 
+                fontSize: "0.75rem", 
+                backgroundColor: agentDetails.color,
+                boxShadow: `0 0 8px ${agentDetails.color}40`,
+                lineHeight: "1.2"
+              }}
+            >
+              <agentDetails.icon size={11} />
+              {agentDetails.name}
+            </span>
+          )}
         </div>
         
         <div className="chat-header-actions d-flex align-items-center gap-2">
@@ -300,10 +332,18 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                 <div className="message-bubble">
                   {isAssistant && (
                     <div className="message-avatar-wrapper">
-                      <div className="message-avatar-icon">
-                        <Code size={12} />
+                      <div 
+                        className="message-avatar-icon text-white"
+                        style={agentDetails ? { backgroundColor: agentDetails.color, borderColor: agentDetails.color } : undefined}
+                      >
+                        {agentDetails ? <agentDetails.icon size={12} /> : <Code size={12} />}
                       </div>
-                      <span className="message-avatar-name">Assistant</span>
+                      <span 
+                        className="message-avatar-name"
+                        style={agentDetails ? { color: agentDetails.color } : undefined}
+                      >
+                        {agentDetails ? agentDetails.name : "Assistant"}
+                      </span>
                     </div>
                   )}
 
@@ -396,10 +436,18 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
           <div className="message-row assistant">
             <div className="message-bubble">
               <div className="message-avatar-wrapper">
-                <div className="message-avatar-icon">
-                  <Code size={12} />
+                <div 
+                  className="message-avatar-icon text-white"
+                  style={agentDetails ? { backgroundColor: agentDetails.color, borderColor: agentDetails.color } : undefined}
+                >
+                  {agentDetails ? <agentDetails.icon size={12} /> : <Code size={12} />}
                 </div>
-                <span className="message-avatar-name">Assistant</span>
+                <span 
+                  className="message-avatar-name"
+                  style={agentDetails ? { color: agentDetails.color } : undefined}
+                >
+                  {agentDetails ? agentDetails.name : "Assistant"}
+                </span>
               </div>
               <div className="typing-indicator">
                 <div className="typing-dot"></div>
@@ -424,7 +472,14 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
       )}
 
       <div className="input-container">
-        <form className="input-form-wrapper" onSubmit={handleSend}>
+        <form 
+          className={`input-form-wrapper ${agentDetails ? agentDetails.className : ''}`} 
+          onSubmit={handleSend}
+          style={agentDetails ? {
+            borderColor: `${agentDetails.color}50`,
+            boxShadow: `0 0 10px ${agentDetails.color}10`
+          } : undefined}
+        >
           {attachedImage && (
             <div className="image-attachment-preview mb-2 position-relative d-inline-block" style={{ textAlign: "left" }}>
               <img 

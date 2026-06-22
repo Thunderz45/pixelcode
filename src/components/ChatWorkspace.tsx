@@ -33,7 +33,6 @@ export const ChatWorkspace: React.FC = () => {
   // New enhancements states
   const [projects, setProjects] = useState<Project[]>([]);
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
-  const [lastProjectId, setLastProjectId] = useState<string | null>(null);
   const [selectedModel, setSelectedModel] = useState<'pro' | 'high' | 'low'>('pro');
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [infoModalOpen, setInfoModalOpen] = useState(false);
@@ -46,7 +45,6 @@ export const ChatWorkspace: React.FC = () => {
     setProfile(null);
     setProjects([]);
     setActiveProjectId(null);
-    setLastProjectId(null);
     setSelectedModel('pro');
     setSettingsOpen(false);
     setInfoModalOpen(false);
@@ -89,22 +87,18 @@ export const ChatWorkspace: React.FC = () => {
     };
   }, [userId]);
 
-  // Project selector automatic chat navigation alignment only on project switch
-  useEffect(() => {
-    if (activeProjectId !== lastProjectId) {
-      setLastProjectId(activeProjectId);
-      
-      const projectChats = activeProjectId 
-        ? chats.filter((c) => c.projectId === activeProjectId)
-        : chats;
+  const handleSelectProject = (projectId: string | null) => {
+    setActiveProjectId(projectId);
+    const projectChats = projectId 
+      ? chats.filter((c) => c.projectId === projectId)
+      : chats;
 
-      if (projectChats.length > 0) {
-        setActiveChatId(projectChats[0].id);
-      } else {
-        setActiveChatId(null);
-      }
+    if (projectChats.length > 0) {
+      setActiveChatId(projectChats[0].id);
+    } else {
+      setActiveChatId(null);
     }
-  }, [activeProjectId, chats, lastProjectId]);
+  };
 
   // Cancel any streaming request when changing chats
   useEffect(() => {
@@ -355,6 +349,7 @@ export const ChatWorkspace: React.FC = () => {
     const projId = Math.random().toString(36).substring(2, 15);
     await saveProject(userId, projId, name);
     setActiveProjectId(projId);
+    setActiveChatId(null);
   };
 
   const handleDeleteProject = async (id: string, e: React.MouseEvent) => {
@@ -365,7 +360,7 @@ export const ChatWorkspace: React.FC = () => {
         await deleteChatSession(userId, chat.id);
       }
       if (activeProjectId === id) {
-        setActiveProjectId(null);
+        handleSelectProject(null);
       }
       await deleteProject(userId, id);
     }
@@ -392,7 +387,7 @@ export const ChatWorkspace: React.FC = () => {
         onSelectAgent={handleSelectAgent}
         projects={projects}
         activeProjectId={activeProjectId}
-        onSelectProject={setActiveProjectId}
+        onSelectProject={handleSelectProject}
         onDeleteProject={handleDeleteProject}
         onOpenSettings={() => setSettingsOpen(true)}
         onOpenInfoModal={(mode) => {
@@ -414,6 +409,7 @@ export const ChatWorkspace: React.FC = () => {
           onOpenSettings={() => setSettingsOpen(true)}
           selectedModel={selectedModel}
           onChangeModel={setSelectedModel}
+          activeAgent={activeChat?.agent || 'general'}
         />
       </main>
 
