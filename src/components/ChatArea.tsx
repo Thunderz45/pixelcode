@@ -29,6 +29,10 @@ interface ChatAreaProps {
   onToggleSidebar: () => void;
   onRegenerateMessage?: (messageId: string) => void;
   onDeleteMessage?: (messageId: string) => void;
+  projectName: string | null;
+  onOpenSettings: () => void;
+  selectedModel: 'pro' | 'high' | 'low';
+  onChangeModel: (model: 'pro' | 'high' | 'low') => void;
 }
 
 export const ChatArea: React.FC<ChatAreaProps> = ({
@@ -39,11 +43,42 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
   onToggleSidebar,
   onRegenerateMessage,
   onDeleteMessage,
+  projectName,
+  onOpenSettings,
+  selectedModel,
+  onChangeModel,
 }) => {
   const [input, setInput] = useState("");
   const [isListening, setIsListening] = useState(false);
   const [expandedReasoning, setExpandedReasoning] = useState<Record<string, boolean>>({});
   const [showScrollBottom, setShowScrollBottom] = useState(false);
+  const [attachedImage, setAttachedImage] = useState<string | null>(null);
+  const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handlePlusClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith("image/")) {
+        alert("Please select an image file.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        setAttachedImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveAttachment = () => {
+    setAttachedImage(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const recognitionRef = useRef<any>(null);
@@ -156,9 +191,17 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
 
   const handleSend = (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (!input.trim() || isLoading) return;
-    onSendMessage(input.trim());
+    if ((!input.trim() && !attachedImage) || isLoading) return;
+    
+    let contentToSend = input.trim();
+    if (attachedImage) {
+      contentToSend += `\n\n![Code Screenshot](${attachedImage})`;
+    }
+    
+    onSendMessage(contentToSend);
     setInput("");
+    setAttachedImage(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -222,7 +265,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
           </button>
           <div className="chat-header-dropdown-trigger d-flex align-items-center gap-1 cursor-pointer">
             <span className="chat-header-name fw-medium">
-              {messages.length > 0 ? (chatTitle || "pixelcode") : "pixelcode"}
+              {projectName ? `${projectName} / ` : ""}{messages.length > 0 ? (chatTitle || "pixelcode") : "pixelcode"}
             </span>
             <ChevronDown size={14} className="text-muted" />
           </div>
@@ -382,6 +425,33 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
 
       <div className="input-container">
         <form className="input-form-wrapper" onSubmit={handleSend}>
+          {attachedImage && (
+            <div className="image-attachment-preview mb-2 position-relative d-inline-block" style={{ textAlign: "left" }}>
+              <img 
+                src={attachedImage} 
+                alt="Upload preview" 
+                style={{ maxHeight: "80px", borderRadius: "6px", border: "1px solid rgba(255,255,255,0.1)" }} 
+              />
+              <button
+                type="button"
+                className="position-absolute top-0 end-0 p-0 d-flex align-items-center justify-content-center"
+                style={{
+                  width: "18px",
+                  height: "18px",
+                  fontSize: "9px",
+                  transform: "translate(50%, -50%)",
+                  border: "none",
+                  backgroundColor: "#ef4444",
+                  color: "#fff",
+                  borderRadius: "50%",
+                  cursor: "pointer",
+                }}
+                onClick={handleRemoveAttachment}
+              >
+                ✕
+              </button>
+            </div>
+          )}
           <textarea
             ref={textareaRef}
             rows={1}
@@ -395,19 +465,90 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
           
           <div className="input-toolbar d-flex align-items-center justify-content-between w-100 mt-2">
             <div className="d-flex align-items-center gap-2">
-              <button type="button" className="toolbar-btn" title="Add files">
+              <button 
+                type="button" 
+                className="toolbar-btn" 
+                title="Add files"
+                onClick={handlePlusClick}
+              >
                 <Plus size={16} />
               </button>
-              <button type="button" className="toolbar-btn" title="Settings">
+              <input 
+                type="file"
+                ref={fileInputRef}
+                style={{ display: "none" }}
+                accept="image/*"
+                onChange={handleFileChange}
+              />
+              <button 
+                type="button" 
+                className="toolbar-btn" 
+                title="Settings"
+                onClick={onOpenSettings}
+              >
                 <Settings size={16} />
               </button>
-              <div className="tools-badge">
-                <span>Tools</span>
-                <span className="tools-count">3</span>
-              </div>
-              <div className="model-dropdown">
-                <span>llama-3.3-70b</span>
-                <span style={{ marginLeft: "4px" }}>▾</span>
+              
+              <div className="model-dropdown-container position-relative">
+                <div 
+                  className="model-dropdown" 
+                  onClick={() => setModelDropdownOpen(!modelDropdownOpen)}
+                  style={{ cursor: "pointer", display: "flex", alignItems: "center" }}
+                >
+                  <span>
+                    {selectedModel === 'pro' ? 'Pro Model' : selectedModel === 'high' ? 'High Model' : 'Low Model'}
+                  </span>
+                  <span style={{ marginLeft: "4px" }}>▾</span>
+                </div>
+                
+                {modelDropdownOpen && (
+                  <div 
+                    className="model-select-menu"
+                    style={{
+                      position: "absolute",
+                      bottom: "100%",
+                      left: "0",
+                      backgroundColor: "#18181b",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                      borderRadius: "8px",
+                      padding: "4px",
+                      zIndex: "100",
+                      marginBottom: "6px",
+                      minWidth: "150px"
+                    }}
+                  >
+                    <div 
+                      className={`model-select-item p-2 rounded-2 ${selectedModel === 'pro' ? 'active' : ''}`}
+                      style={{ cursor: "pointer", padding: "8px 12px", color: "#fff", fontSize: "0.85rem", display: "flex", justifyContent: "space-between" }}
+                      onClick={() => {
+                        onChangeModel('pro');
+                        setModelDropdownOpen(false);
+                      }}
+                    >
+                      Pro Model (70B)
+                    </div>
+                    <div 
+                      className={`model-select-item p-2 rounded-2 ${selectedModel === 'high' ? 'active' : ''}`}
+                      style={{ cursor: "pointer", padding: "8px 12px", color: "#fff", fontSize: "0.85rem", display: "flex", justifyContent: "space-between" }}
+                      onClick={() => {
+                        onChangeModel('high');
+                        setModelDropdownOpen(false);
+                      }}
+                    >
+                      High Model (Mixtral)
+                    </div>
+                    <div 
+                      className={`model-select-item p-2 rounded-2 ${selectedModel === 'low' ? 'active' : ''}`}
+                      style={{ cursor: "pointer", padding: "8px 12px", color: "#fff", fontSize: "0.85rem", display: "flex", justifyContent: "space-between" }}
+                      onClick={() => {
+                        onChangeModel('low');
+                        setModelDropdownOpen(false);
+                      }}
+                    >
+                      Low Model (Gemma)
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 

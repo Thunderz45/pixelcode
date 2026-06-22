@@ -4,16 +4,21 @@ export interface Message {
   content: string;
   timestamp: number;
 }
-
 export async function streamGroqCompletion(
   messages: Message[],
   onChunk: (chunk: string) => void,
   signal?: AbortSignal,
-  agent?: 'frontend' | 'backend' | 'fullstack' | 'general'
+  agent?: 'frontend' | 'backend' | 'fullstack' | 'general',
+  modelType?: 'pro' | 'high' | 'low'
 ): Promise<string> {
   const apiKey = import.meta.env.VITE_GROQ_API_KEY || "";
-  const model = "llama-3.3-70b-versatile";
 
+  let model = "llama-3.3-70b-versatile";
+  if (modelType === "high") {
+    model = "mixtral-8x7b-32768";
+  } else if (modelType === "low") {
+    model = "gemma2-9b-it";
+  }
   let systemPrompt = `You are Pixelcode Developer Assistant, a strict coding-only AI assistant. You only answer questions related to programming, software development, coding, databases, web technologies, DevOps, algorithms, computer science, and systems design.
 If the user asks about ANYTHING else (including general knowledge, news, creative writing, history, lifestyle, sports, cooking, politics, etc.), you must strictly decline to answer and state: "I am a dedicated coding assistant and can only help with programming, coding, or system development questions." Do not answer the question under any circumstances if it is outside these topics.`;
 

@@ -10,9 +10,13 @@ import {
   deleteChatSession,
   type UserProfile,
   subscribeToUserProfile,
-  incrementMessageCount
+  type Project,
+  saveProject,
+  subscribeToProjects,
+  deleteProject
 } from "../services/db";
-import { SubscriptionModal } from "./SubscriptionModal";
+import { SettingsModal } from "./SettingsModal";
+import { InfoModal } from "./InfoModal";
 import "./ChatWorkspace.css";
 
 export const ChatWorkspace: React.FC = () => {
@@ -25,13 +29,28 @@ export const ChatWorkspace: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [abortController, setAbortController] = useState<AbortController | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [isBillingOpen, setIsBillingOpen] = useState(false);
+
+  // New enhancements states
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
+  const [lastProjectId, setLastProjectId] = useState<string | null>(null);
+  const [selectedModel, setSelectedModel] = useState<'pro' | 'high' | 'low'>('pro');
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [infoModalOpen, setInfoModalOpen] = useState(false);
+  const [infoModalMode, setInfoModalMode] = useState<'tools' | 'workflow' | 'project' | 'preferences' | 'theme' | 'language' | 'shortcuts' | 'report' | 'workspace' | null>(null);
 
   // Clear state when userId changes to prevent bleed
   useEffect(() => {
     setChats([]);
     setActiveChatId(null);
     setProfile(null);
+    setProjects([]);
+    setActiveProjectId(null);
+    setLastProjectId(null);
+    setSelectedModel('pro');
+    setSettingsOpen(false);
+    setInfoModalOpen(false);
+    setInfoModalMode(null);
   }, [userId]);
 
   // Subscribe to user usage and subscription profile details
@@ -51,7 +70,6 @@ export const ChatWorkspace: React.FC = () => {
       
       // Auto-select the most recent chat if none is active and chats exist
       if (updatedChats.length > 0 && !activeChatId) {
-        // Find if there is a session already
         setActiveChatId(updatedChats[0].id);
       }
     });
@@ -60,6 +78,33 @@ export const ChatWorkspace: React.FC = () => {
       unsubscribe();
     };
   }, [userId]);
+
+  // Subscribe to real-time projects from database
+  useEffect(() => {
+    const unsubscribe = subscribeToProjects(userId, (updatedProjects) => {
+      setProjects(updatedProjects);
+    });
+    return () => {
+      unsubscribe();
+    };
+  }, [userId]);
+
+  // Project selector automatic chat navigation alignment only on project switch
+  useEffect(() => {
+    if (activeProjectId !== lastProjectId) {
+      setLastProjectId(activeProjectId);
+      
+      const projectChats = activeProjectId 
+        ? chats.filter((c) => c.projectId === activeProjectId)
+        : chats;
+
+      if (projectChats.length > 0) {
+        setActiveChatId(projectChats[0].id);
+      } else {
+        setActiveChatId(null);
+      }
+    }
+  }, [activeProjectId, chats, lastProjectId]);
 
   // Cancel any streaming request when changing chats
   useEffect(() => {
@@ -121,7 +166,7 @@ export const ChatWorkspace: React.FC = () => {
       })
     );
 
-    await saveChatSession(userId, activeChatId, activeChat.title, updatedMessages, activeChat.agent);
+    await saveChatSession(userId, activeChatId, activeChat.title, updatedMessages, activeChat.agent, activeChat.projectId);
   };
 
   const handleRegenerateMessage = async (messageId: string) => {
@@ -144,16 +189,11 @@ export const ChatWorkspace: React.FC = () => {
       })
     );
 
-    await saveChatSession(userId, activeChatId, activeChat.title, messagesToKeep, activeChat.agent);
+    await saveChatSession(userId, activeChatId, activeChat.title, messagesToKeep, activeChat.agent, activeChat.projectId);
     await handleSendMessage(lastUserMessage.content);
   };
 
   const handleSendMessage = async (content: string) => {
-    // Check if free user limit is reached
-    if (profile && !profile.isSubscribed && profile.messageCount >= 25) {
-      setIsBillingOpen(true);
-      return;
-    }
 
     const currentId = activeChatId || Math.random().toString(36).substring(2, 15);
     if (!activeChatId) {
@@ -173,10 +213,10 @@ export const ChatWorkspace: React.FC = () => {
     const currentTitle = activeChat ? activeChat.title : (content.length > 25 ? `${content.substring(0, 25)}...` : content);
 
     // Optimistically save user message
-    await saveChatSession(userId, currentId, currentTitle, newMessages, activeChat?.agent);
+    const targetProjectId = activeChat?.projectId || activeProjectId || undefined;
+    await saveChatSession(userId, currentId, currentTitle, newMessages, activeChat?.agent, targetProjectId);
 
-    // Increment usage message count
-    await incrementMessageCount(userId);
+    // No credits system active: message count / credit decrement logic removed
 
     setIsLoading(true);
     const controller = new AbortController();
@@ -201,7 +241,8 @@ export const ChatWorkspace: React.FC = () => {
         title: currentTitle,
         createdAt: idx >= 0 ? prevChats[idx].createdAt : Date.now(),
         updatedAt: Date.now(),
-        messages: messagesWithPlaceholder
+        messages: messagesWithPlaceholder,
+        projectId: targetProjectId,
       };
       
       if (idx >= 0) {
@@ -220,7 +261,6 @@ export const ChatWorkspace: React.FC = () => {
         newMessages,
         (chunk) => {
           streamedContent += chunk;
-          // Update the streaming content in state
           setChats(prevChats => 
             prevChats.map(c => {
               if (c.id === currentId) {
@@ -236,25 +276,25 @@ export const ChatWorkspace: React.FC = () => {
           );
         },
         controller.signal,
-        activeChat?.agent
+        activeChat?.agent,
+        selectedModel
       );
 
       // Save complete session with streamed content to DB
       const finalAssistantMessage = { ...assistantMessage, content: streamedContent };
       const finalMessages = [...newMessages, finalAssistantMessage];
-      await saveChatSession(userId, currentId, currentTitle, finalMessages, activeChat?.agent);
+      await saveChatSession(userId, currentId, currentTitle, finalMessages, activeChat?.agent, targetProjectId);
     } catch (err: any) {
       if (err.name === "AbortError") {
         console.log("Streaming aborted");
       } else {
         console.error("Completion error:", err);
-        // Show friendly error inside chat
         const errorAssistantMessage = { 
           ...assistantMessage, 
           content: "Sorry, I encountered an error communicating with the Groq API. Please check your network connection or API configuration." 
         };
         const finalMessages = [...newMessages, errorAssistantMessage];
-        await saveChatSession(userId, currentId, currentTitle, finalMessages, activeChat?.agent);
+        await saveChatSession(userId, currentId, currentTitle, finalMessages, activeChat?.agent, targetProjectId);
       }
     } finally {
       setIsLoading(false);
@@ -277,7 +317,7 @@ export const ChatWorkspace: React.FC = () => {
       welcomeText = "Hello! I am your Frontend Developer Assistant. Ask me anything about React, CSS, Tailwind, TypeScript, modern UI design, animations, or browser performance.";
       title = "Frontend Assistant";
     } else if (agent === "backend") {
-      welcomeText = "Hello! I am your Backend Developer Assistant. Ask me anything about APIs, databases (SQL/NoSQL), server architecture, authentication, or Docker/DevOps.";
+      welcomeText = "Hello! I am your Backend Developer Assistant. Ask me anything about APIs, databases (SQL/NoSQL), server architecture, authentication, or DevOps.";
       title = "Backend Assistant";
     } else if (agent === "fullstack") {
       welcomeText = "Hello! I am your Fullstack Developer Assistant. I can help you with end-to-end applications, deployments (Vercel, AWS), system architectures, or integrations.";
@@ -301,13 +341,34 @@ export const ChatWorkspace: React.FC = () => {
       updatedAt: Date.now(),
       messages: [assistantMessage],
       agent,
+      projectId: activeProjectId || undefined,
     };
 
     // Optimistically update the chats list locally
     setChats((prevChats) => [session, ...prevChats]);
 
     // Save session with agent data to DB
-    await saveChatSession(userId, newId, title, [assistantMessage], agent);
+    await saveChatSession(userId, newId, title, [assistantMessage], agent, activeProjectId || undefined);
+  };
+
+  const handleCreateProject = async (name: string) => {
+    const projId = Math.random().toString(36).substring(2, 15);
+    await saveProject(userId, projId, name);
+    setActiveProjectId(projId);
+  };
+
+  const handleDeleteProject = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (confirm("Are you sure you want to delete this project and all its chats?")) {
+      const chatsToDelete = chats.filter((c) => c.projectId === id);
+      for (const chat of chatsToDelete) {
+        await deleteChatSession(userId, chat.id);
+      }
+      if (activeProjectId === id) {
+        setActiveProjectId(null);
+      }
+      await deleteProject(userId, id);
+    }
   };
 
   const toggleSidebar = () => {
@@ -327,9 +388,17 @@ export const ChatWorkspace: React.FC = () => {
         onDeleteChat={handleDeleteChat}
         collapsed={!sidebarOpen}
         profile={profile}
-        onOpenBilling={() => setIsBillingOpen(true)}
         activeAgent={activeChat?.agent || 'general'}
         onSelectAgent={handleSelectAgent}
+        projects={projects}
+        activeProjectId={activeProjectId}
+        onSelectProject={setActiveProjectId}
+        onDeleteProject={handleDeleteProject}
+        onOpenSettings={() => setSettingsOpen(true)}
+        onOpenInfoModal={(mode) => {
+          setInfoModalMode(mode);
+          setInfoModalOpen(true);
+        }}
       />
 
       <main className="workspace-content">
@@ -341,13 +410,30 @@ export const ChatWorkspace: React.FC = () => {
           onToggleSidebar={toggleSidebar}
           onRegenerateMessage={handleRegenerateMessage}
           onDeleteMessage={handleDeleteMessage}
+          projectName={projects.find((p) => p.id === activeProjectId)?.name || null}
+          onOpenSettings={() => setSettingsOpen(true)}
+          selectedModel={selectedModel}
+          onChangeModel={setSelectedModel}
         />
       </main>
 
-      <SubscriptionModal
-        isOpen={isBillingOpen}
-        onClose={() => setIsBillingOpen(false)}
+      {/* SubscriptionModal removed */}
+
+      <SettingsModal
+        isOpen={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
         userId={userId}
+        profile={profile}
+      />
+
+      <InfoModal
+        isOpen={infoModalOpen}
+        mode={infoModalMode}
+        onClose={() => {
+          setInfoModalOpen(false);
+          setInfoModalMode(null);
+        }}
+        onCreateProject={handleCreateProject}
       />
     </div>
   );

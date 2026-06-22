@@ -13,16 +13,16 @@ import {
   Globe,
   Command,
   Mail,
-  CreditCard,
   Settings,
   Briefcase,
   ChevronRight,
   Code,
   Database,
-  Layers
+  Layers,
+  Plus
 } from "lucide-react";
 import { auth } from "../firebase";
-import type { ChatSession, UserProfile } from "../services/db";
+import type { ChatSession, UserProfile, Project } from "../services/db";
 import "./Sidebar.css";
 
 interface SidebarProps {
@@ -33,9 +33,14 @@ interface SidebarProps {
   onDeleteChat: (id: string, e: React.MouseEvent) => void;
   collapsed?: boolean;
   profile: UserProfile | null;
-  onOpenBilling: () => void;
   activeAgent?: 'frontend' | 'backend' | 'fullstack' | 'general';
   onSelectAgent: (agent: 'frontend' | 'backend' | 'fullstack' | 'general') => void;
+  projects: Project[];
+  activeProjectId: string | null;
+  onSelectProject: (projectId: string | null) => void;
+  onDeleteProject: (projectId: string, e: React.MouseEvent) => void;
+  onOpenSettings: () => void;
+  onOpenInfoModal: (mode: 'tools' | 'workflow' | 'project' | 'preferences' | 'theme' | 'language' | 'shortcuts' | 'report' | 'workspace') => void;
 }
 
 interface GroupedChats {
@@ -50,9 +55,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onDeleteChat,
   collapsed = false,
   profile,
-  onOpenBilling,
   activeAgent = 'general',
   onSelectAgent,
+  projects,
+  activeProjectId,
+  onSelectProject,
+  onDeleteProject,
+  onOpenSettings,
+  onOpenInfoModal,
 }) => {
   const user = auth.currentUser;
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -66,6 +76,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const getInitials = () => {
+    if (profile?.username) {
+      const parts = profile.username.trim().split(" ");
+      return parts.map((p) => p[0]).join("").substring(0, 2).toUpperCase();
+    }
     if (!user) return "U";
     if (user.displayName) {
       const parts = user.displayName.split(" ");
@@ -75,6 +89,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const getUserName = () => {
+    if (profile?.username) return profile.username;
     if (!user) return "Developer";
     return user.displayName || user.email?.split("@")[0] || "Developer";
   };
@@ -108,7 +123,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
     return groups;
   };
 
-  const grouped = groupChats(chats);
+  const filteredChats = activeProjectId 
+    ? chats.filter((c) => c.projectId === activeProjectId)
+    : chats;
+
+  const grouped = groupChats(filteredChats);
 
   return (
     <aside className={`sidebar ${collapsed ? "collapsed" : "open"} d-flex flex-column h-100`}>
@@ -123,17 +142,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <SquarePen size={18} />
             <span>New Chat</span>
           </div>
-          <div className="sidebar-menu-item">
+          <div className="sidebar-menu-item" onClick={() => onOpenInfoModal('tools')}>
             <SlidersHorizontal size={18} />
             <span>Tool Management</span>
           </div>
-          <div className="sidebar-menu-item">
+          <div className="sidebar-menu-item" onClick={() => onOpenInfoModal('workflow')}>
             <Share2 size={18} />
             <span>Workflow</span>
-          </div>
-          <div className="sidebar-menu-item">
-            <Folder size={18} />
-            <span>Projects</span>
           </div>
         </div>
       </div>
@@ -187,6 +202,60 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </a>
         </div>
 
+        {/* Projects Section */}
+        <div className="projects-section mb-4">
+          <div className="d-flex align-items-center justify-content-between mb-2">
+            <h2 className="chat-list-title mb-0">Projects</h2>
+            <button 
+              className="btn btn-link p-0 text-secondary d-flex align-items-center"
+              style={{ border: "none", background: "none", color: "var(--text-secondary)" }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenInfoModal('project');
+              }}
+              title="Create New Project"
+            >
+              <Plus size={16} />
+            </button>
+          </div>
+          
+          <div 
+            className={`sidebar-menu-item ${!activeProjectId ? "active" : ""}`}
+            onClick={() => onSelectProject(null)}
+          >
+            <div className="agent-icon-wrapper bg-secondary text-white">
+              <Folder size={12} />
+            </div>
+            <span>General / All</span>
+          </div>
+
+          {projects.map((proj) => (
+            <div 
+              key={proj.id}
+              className={`sidebar-menu-item justify-content-between ${activeProjectId === proj.id ? "active" : ""}`}
+              onClick={() => onSelectProject(proj.id)}
+            >
+              <div className="d-flex align-items-center gap-2 text-truncate">
+                <div className="agent-icon-wrapper bg-primary text-white">
+                  <Folder size={12} />
+                </div>
+                <span className="text-truncate">{proj.name}</span>
+              </div>
+              <button 
+                className="delete-chat-btn btn p-0 ms-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDeleteProject(proj.id, e);
+                }}
+                style={{ border: "none", background: "none", opacity: 0.7 }}
+                title="Delete Project"
+              >
+                <Trash2 size={12} />
+              </button>
+            </div>
+          ))}
+        </div>
+
         {/* Dynamic Chat Conversations grouped by date */}
         <div className="conversations-section">
           {Object.entries(grouped).map(([groupName, groupChats]) => {
@@ -235,20 +304,32 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   {getUserName()}
                 </div>
                 <div className="dropdown-profile-email text-muted small text-truncate">
-                  {user?.email || "anon@developer.com"}
+                  {profile?.email || user?.email || "anon@developer.com"}
                 </div>
               </div>
             </div>
             
             <div className="dropdown-menu-list p-1">
-              <button className="dropdown-item d-flex align-items-center justify-content-between">
+              <button 
+                className="dropdown-item d-flex align-items-center justify-content-between"
+                onClick={() => {
+                  onOpenInfoModal('preferences');
+                  setShowProfileMenu(false);
+                }}
+              >
                 <div className="d-flex align-items-center gap-3">
                   <SlidersHorizontal size={16} />
                   <span>Chat Preferences</span>
                 </div>
               </button>
               
-              <button className="dropdown-item d-flex align-items-center justify-content-between">
+              <button 
+                className="dropdown-item d-flex align-items-center justify-content-between"
+                onClick={() => {
+                  onOpenInfoModal('theme');
+                  setShowProfileMenu(false);
+                }}
+              >
                 <div className="d-flex align-items-center gap-3">
                   <Palette size={16} />
                   <span>Theme</span>
@@ -259,7 +340,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </div>
               </button>
               
-              <button className="dropdown-item d-flex align-items-center justify-content-between">
+              <button 
+                className="dropdown-item d-flex align-items-center justify-content-between"
+                onClick={() => {
+                  onOpenInfoModal('language');
+                  setShowProfileMenu(false);
+                }}
+              >
                 <div className="d-flex align-items-center gap-3">
                   <Globe size={16} />
                   <span>Language</span>
@@ -269,35 +356,48 @@ export const Sidebar: React.FC<SidebarProps> = ({
               
               <div className="dropdown-divider"></div>
               
-              <button className="dropdown-item d-flex align-items-center gap-3">
+              <button 
+                className="dropdown-item d-flex align-items-center gap-3"
+                onClick={() => {
+                  onOpenInfoModal('shortcuts');
+                  setShowProfileMenu(false);
+                }}
+              >
                 <Command size={16} />
                 <span>Keyboard Shortcuts</span>
               </button>
               
-              <button className="dropdown-item d-flex align-items-center gap-3">
+              <button 
+                className="dropdown-item d-flex align-items-center gap-3"
+                onClick={() => {
+                  onOpenInfoModal('report');
+                  setShowProfileMenu(false);
+                }}
+              >
                 <Mail size={16} />
                 <span>Report an issue</span>
               </button>
               
-              <button
+              <div className="dropdown-divider"></div>
+              
+              <button 
                 className="dropdown-item d-flex align-items-center gap-3"
                 onClick={() => {
-                  onOpenBilling();
+                  onOpenSettings();
                   setShowProfileMenu(false);
                 }}
               >
-                <CreditCard size={16} />
-                <span>Manage Billing</span>
-              </button>
-              
-              <div className="dropdown-divider"></div>
-              
-              <button className="dropdown-item d-flex align-items-center gap-3">
                 <Settings size={16} />
                 <span>User Settings</span>
               </button>
               
-              <button className="dropdown-item d-flex align-items-center gap-3">
+              <button 
+                className="dropdown-item d-flex align-items-center gap-3"
+                onClick={() => {
+                  onOpenInfoModal('workspace');
+                  setShowProfileMenu(false);
+                }}
+              >
                 <Briefcase size={16} />
                 <span>{getUserName()}'s Workspace</span>
               </button>
@@ -312,49 +412,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
         )}
         
-        {/* Usage Progress Meter Bar */}
-        {profile && (
-          <div className="usage-meter-container mb-3" onClick={onOpenBilling}>
-            <div className="usage-meter-header d-flex justify-content-between align-items-center mb-1">
-              <span className="usage-meter-title">
-                {profile.isSubscribed ? "Pro Unlimited" : "Free Chats Used"}
-              </span>
-              <span className="usage-meter-count">
-                {profile.isSubscribed ? "∞" : `${profile.messageCount} / 25`}
-              </span>
-            </div>
-            {!profile.isSubscribed && (
-              <>
-                <div className="usage-meter-progress-bg">
-                  <div 
-                    className="usage-meter-progress-bar" 
-                    style={{ width: `${Math.min((profile.messageCount / 25) * 100, 100)}%` }}
-                  ></div>
-                </div>
-                <div className="usage-meter-footer mt-1 text-center">
-                  Upgrade for unlimited access
-                </div>
-              </>
-            )}
-            {profile.isSubscribed && (
-              <div className="usage-meter-pro-subtitle mt-0.5 text-success small">
-                Unlimited chats active
-              </div>
-            )}
-          </div>
-        )}
-
         <div className="profile-card" onClick={() => setShowProfileMenu(!showProfileMenu)}>
-          <div className="profile-avatar" style={profile?.isSubscribed ? { background: "linear-gradient(90deg, #6366f1, #06b6d4)" } : undefined}>
+          <div className="profile-avatar">
             {getInitials()}
           </div>
           <div className="profile-info d-flex align-items-center overflow-hidden">
             <div className="profile-email text-truncate flex-grow-1" style={{ marginRight: "6px" }}>
-              {user?.email || "anon@developer.com"}
+              {profile?.email || user?.email || "anon@developer.com"}
             </div>
-            {profile?.isSubscribed && (
-              <span className="pro-badge">PRO</span>
-            )}
           </div>
           <div className="profile-arrow">
             <ChevronsUpDown size={16} />

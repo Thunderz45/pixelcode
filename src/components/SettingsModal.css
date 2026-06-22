@@ -1,0 +1,171 @@
+.settings-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(6, 6, 6, 0.85);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.25s ease-out;
+}
+
+.settings-modal-card {
+  position: relative;
+  background: linear-gradient(135deg, #18181b 0%, #09090b 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  border-radius: 20px;
+  width: 440px;
+  max-width: 90%;
+  padding: 32px;
+  animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+}
+
+/* Glassmorphic card back-glow */
+.settings-modal-card::before {
+  content: "";
+  position: absolute;
+  top: -50px;
+  left: -50px;
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, rgba(0, 0, 0, 0) 70%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.settings-modal-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: transparent;
+  border: none;
+  color: #71717a;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 50%;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.settings-modal-close:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+}
+
+.settings-modal-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.settings-modal-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 10px 0;
+  letter-spacing: -0.02em;
+}
+
+.settings-modal-desc {
+  font-size: 0.85rem;
+  color: #a1a1aa;
+  line-height: 1.5;
+  margin: 0 0 24px 0;
+}
+
+.settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.settings-input {
+  background-color: #09090b;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: #ffffff;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  outline: none;
+  width: 100%;
+}
+
+.settings-input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15);
+}
+
+.settings-input.text-muted {
+  color: #71717a;
+  border-color: rgba(255, 255, 255, 0.04);
+  cursor: not-allowed;
+}
+
+.form-hint {
+  font-size: 0.72rem;
+  color: #52525b;
+  margin-top: 2px;
+}
+
+.account-details-box {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.82rem;
+}
+
+.details-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.settings-error-msg {
+  color: #f87171;
+  font-size: 0.8rem;
+  background-color: rgba(248, 113, 113, 0.1);
+  padding: 8px 12px;
+  border-radius: 6px;
+  border-left: 3px solid #f87171;
+}
+
+.settings-success-msg {
+  color: #34d399;
+  font-size: 0.8rem;
+  background-color: rgba(52, 211, 153, 0.1);
+  padding: 8px 12px;
+  border-radius: 6px;
+  border-left: 3px solid #34d399;
+}
+
+.settings-submit-btn {
+  background: linear-gradient(90deg, #6366f1, #06b6d4);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.settings-submit-btn:hover:not(:disabled) {
+  opacity: 0.95;
+}
+
+.settings-submit-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}

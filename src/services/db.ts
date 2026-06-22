@@ -1,6 +1,22 @@
-import { ref, set, remove, onValue } from "firebase/database";
-import { database } from "../firebase";
+import { 
+  doc, 
+  setDoc, 
+  getDoc, 
+  collection, 
+  onSnapshot, 
+  deleteDoc, 
+  runTransaction, 
+  updateDoc 
+} from "firebase/firestore";
+import { db, auth } from "../firebase";
 import type { Message } from "./groq";
+
+export interface Project {
+  id: string;
+  name: string;
+  createdAt: number;
+  updatedAt: number;
+}
 
 export interface ChatSession {
   id: string;
@@ -9,207 +25,324 @@ export interface ChatSession {
   updatedAt: number;
   messages: Message[];
   agent?: 'frontend' | 'backend' | 'fullstack' | 'general';
+  projectId?: string;
 }
 
-const getChatsLocalStorageKey = (userId: string) => `pixelcode_chats_${userId}`;
-
-function getLocalChats(userId: string): ChatSession[] {
-  try {
-    const data = localStorage.getItem(getChatsLocalStorageKey(userId));
-    return data ? JSON.parse(data) : [];
-  } catch (e) {
-    console.error("Local storage error:", e);
-    return [];
-  }
+export interface UserProfile {
+  email: string;
+  username: string;
+  credits: number;
+  subscription: boolean;
+  createdAt: number;
+  updatedAt: number;
+  messageCount: number; // Derived virtual field for UI compatibility
+  isSubscribed: boolean; // Derived virtual field for UI compatibility
 }
 
-function saveLocalChat(userId: string, session: ChatSession) {
-  try {
-    const chats = getLocalChats(userId);
-    const index = chats.findIndex((c) => c.id === session.id);
-    if (index >= 0) {
-      // Preserve original createdAt
-      session.createdAt = chats[index].createdAt || session.createdAt;
-      chats[index] = session;
-    } else {
-      chats.push(session);
-    }
-    localStorage.setItem(getChatsLocalStorageKey(userId), JSON.stringify(chats));
-  } catch (e) {
-    console.error("Local storage save error:", e);
-  }
-}
-
-function deleteLocalChat(userId: string, chatId: string) {
-  try {
-    const chats = getLocalChats(userId);
-    const filtered = chats.filter((c) => c.id !== chatId);
-    localStorage.setItem(getChatsLocalStorageKey(userId), JSON.stringify(filtered));
-  } catch (e) {
-    console.error("Local storage delete error:", e);
-  }
-}
-
-export async function saveChatSession(
+/**
+ * Saves a project to Firestore.
+ */
+export async function saveProject(
   userId: string,
-  chatId: string,
-  title: string,
-  messages: Message[],
-  agent?: 'frontend' | 'backend' | 'fullstack' | 'general'
+  projectId: string,
+  name: string
 ): Promise<void> {
-  const session: ChatSession = {
-    id: chatId,
-    title,
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-    messages,
-    agent,
-  };
-
-  // Always save locally first for instant updates & fallback
-  saveLocalChat(userId, session);
+  if (!userId || userId === "guest") return;
 
   try {
-    const chatRef = ref(database, `chats/${userId}/${chatId}`);
-    await set(chatRef, session);
+    const projectDocRef = doc(db, "users", userId, "projects", projectId);
+    const docSnap = await getDoc(projectDocRef);
+
+    let createdAt = Date.now();
+    if (docSnap.exists()) {
+      createdAt = docSnap.data().createdAt || createdAt;
+    }
+
+    await setDoc(projectDocRef, {
+      name,
+      createdAt,
+      updatedAt: Date.now(),
+    }, { merge: true });
   } catch (err) {
-    console.warn("Failed to save to Firebase DB, falling back to LocalStorage:", err);
+    console.error("Failed to save project in Firestore:", err);
+    throw err;
   }
 }
 
-export function subscribeToChats(
+/**
+ * Subscribes to projects in real-time.
+ */
+export function subscribeToProjects(
   userId: string,
-  onUpdate: (chats: ChatSession[]) => void
+  onUpdate: (projects: Project[]) => void
 ): () => void {
-  // Give immediate local chats so UI loads instantly
-  const localChats = getLocalChats(userId);
-  onUpdate(localChats.sort((a, b) => b.updatedAt - a.updatedAt));
+  if (!userId || userId === "guest") {
+    onUpdate([]);
+    return () => {};
+  }
 
   try {
-    const userChatsRef = ref(database, `chats/${userId}`);
-    const unsubscribe = onValue(
-      userChatsRef,
+    const projectsCollectionRef = collection(db, "users", userId, "projects");
+    const unsubscribe = onSnapshot(
+      projectsCollectionRef,
       (snapshot) => {
-        if (snapshot.exists()) {
-          const data = snapshot.val();
-          const sessions: ChatSession[] = Object.values(data);
-          // Sync with local storage
-          try {
-            localStorage.setItem(getChatsLocalStorageKey(userId), JSON.stringify(sessions));
-          } catch (_) {}
-          onUpdate(sessions.sort((a, b) => b.updatedAt - a.updatedAt));
-        } else {
-          try {
-            localStorage.setItem(getChatsLocalStorageKey(userId), JSON.stringify([]));
-          } catch (_) {}
-          onUpdate([]);
-        }
+        const list: Project[] = [];
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          list.push({
+            id: doc.id,
+            name: data.name || "",
+            createdAt: data.createdAt || Date.now(),
+            updatedAt: data.updatedAt || Date.now(),
+          });
+        });
+        // Sort by name or updatedAt
+        onUpdate(list.sort((a, b) => b.updatedAt - a.updatedAt));
       },
       (err) => {
-        console.warn("Firebase DB read rejected/failed, using local storage:", err);
-        onUpdate(getLocalChats(userId).sort((a, b) => b.updatedAt - a.updatedAt));
+        console.error("Firestore subscribeToProjects error:", err);
       }
     );
 
     return unsubscribe;
   } catch (err) {
-    console.warn("Firebase subscribe failed, using static localStorage:", err);
+    console.error("Firestore subscribeToProjects failed:", err);
     return () => {};
   }
 }
 
-export async function deleteChatSession(userId: string, chatId: string): Promise<void> {
-  deleteLocalChat(userId, chatId);
+/**
+ * Deletes a project from Firestore.
+ */
+export async function deleteProject(userId: string, projectId: string): Promise<void> {
+  if (!userId || userId === "guest") return;
 
   try {
-    const chatRef = ref(database, `chats/${userId}/${chatId}`);
-    await remove(chatRef);
+    const projectDocRef = doc(db, "users", userId, "projects", projectId);
+    await deleteDoc(projectDocRef);
   } catch (err) {
-    console.warn("Failed to delete from Firebase DB:", err);
+    console.error("Failed to delete project from Firestore:", err);
+    throw err;
   }
 }
 
-export interface UserProfile {
-  isSubscribed: boolean;
-  messageCount: number;
-}
+/**
+ * Saves a chat session directly to Firestore.
+ */
+export async function saveChatSession(
+  userId: string,
+  chatId: string,
+  title: string,
+  messages: Message[],
+  agent?: 'frontend' | 'backend' | 'fullstack' | 'general',
+  projectId?: string
+): Promise<void> {
+  if (!userId || userId === "guest") return;
 
-const getUserProfileLocalKey = (userId: string) => `pixelcode_user_profile_${userId}`;
-
-function getLocalUserProfile(userId: string): UserProfile {
   try {
-    const data = localStorage.getItem(getUserProfileLocalKey(userId));
-    if (data) return JSON.parse(data);
-  } catch (_) {}
-  return { isSubscribed: false, messageCount: 0 };
+    const chatDocRef = doc(db, "users", userId, "chats", chatId);
+    const docSnap = await getDoc(chatDocRef);
+    
+    let createdAt = Date.now();
+    let existingProjectId: string | undefined = undefined;
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      createdAt = data.createdAt || createdAt;
+      existingProjectId = data.projectId;
+    }
+
+    await setDoc(chatDocRef, {
+      title,
+      messages,
+      createdAt,
+      updatedAt: Date.now(),
+      agent: agent || 'general',
+      projectId: projectId !== undefined ? projectId : (existingProjectId || null),
+    }, { merge: true });
+  } catch (err) {
+    console.error("Failed to save chat to Firestore:", err);
+    throw err;
+  }
 }
 
-function saveLocalUserProfile(userId: string, profile: UserProfile) {
+/**
+ * Subscribes to all chat sessions for a user in real-time.
+ */
+export function subscribeToChats(
+  userId: string,
+  onUpdate: (chats: ChatSession[]) => void
+): () => void {
+  if (!userId || userId === "guest") {
+    onUpdate([]);
+    return () => {};
+  }
+
   try {
-    localStorage.setItem(getUserProfileLocalKey(userId), JSON.stringify(profile));
-  } catch (_) {}
+    const chatsCollectionRef = collection(db, "users", userId, "chats");
+    const unsubscribe = onSnapshot(
+      chatsCollectionRef,
+      (snapshot) => {
+        const sessions: ChatSession[] = [];
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          sessions.push({
+            id: doc.id,
+            title: data.title || "",
+            createdAt: data.createdAt || Date.now(),
+            updatedAt: data.updatedAt || Date.now(),
+            messages: data.messages || [],
+            agent: data.agent,
+            projectId: data.projectId || undefined,
+          });
+        });
+        // Sort by updatedAt descending
+        onUpdate(sessions.sort((a, b) => b.updatedAt - a.updatedAt));
+      },
+      (err) => {
+        console.error("Firestore subscribeToChats error:", err);
+      }
+    );
+
+    return unsubscribe;
+  } catch (err) {
+    console.error("Firestore subscribeToChats failed:", err);
+    return () => {};
+  }
 }
 
+/**
+ * Deletes a chat session from Firestore.
+ */
+export async function deleteChatSession(userId: string, chatId: string): Promise<void> {
+  if (!userId || userId === "guest") return;
+
+  try {
+    const chatDocRef = doc(db, "users", userId, "chats", chatId);
+    await deleteDoc(chatDocRef);
+  } catch (err) {
+    console.error("Failed to delete chat session from Firestore:", err);
+    throw err;
+  }
+}
+
+/**
+ * Subscribes to the user profile document in real-time.
+ * If the profile does not exist in Firestore, it automatically creates it to prevent duplicates.
+ */
 export function subscribeToUserProfile(
   userId: string,
   onUpdate: (profile: UserProfile) => void
 ): () => void {
-  // Give immediate local data
-  const localProf = getLocalUserProfile(userId);
-  onUpdate(localProf);
+  if (!userId || userId === "guest") {
+    onUpdate({
+      email: "",
+      username: "Guest",
+      credits: 0,
+      subscription: false,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      messageCount: 0,
+      isSubscribed: false,
+    });
+    return () => {};
+  }
 
   try {
-    const userRef = ref(database, `users/${userId}`);
-    const unsubscribe = onValue(userRef, (snapshot) => {
-      if (snapshot.exists()) {
-        const val = snapshot.val();
-        const profile = {
-          isSubscribed: !!val.isSubscribed,
-          messageCount: typeof val.messageCount === "number" ? val.messageCount : 0,
-        };
-        saveLocalUserProfile(userId, profile);
-        onUpdate(profile);
-      } else {
-        // Init profile
-        const profile = { isSubscribed: false, messageCount: 0 };
-        set(userRef, profile);
-        saveLocalUserProfile(userId, profile);
-        onUpdate(profile);
+    const userDocRef = doc(db, "users", userId);
+    const unsubscribe = onSnapshot(
+      userDocRef,
+      async (snapshot) => {
+        if (snapshot.exists()) {
+          const data = snapshot.data();
+          const credits = typeof data.credits === "number" ? data.credits : 25;
+          const isSubscribed = !!data.subscription;
+          onUpdate({
+            email: data.email || "",
+            username: data.username || "",
+            credits: credits,
+            subscription: isSubscribed,
+            createdAt: data.createdAt || Date.now(),
+            updatedAt: data.updatedAt || Date.now(),
+            messageCount: Math.max(0, 25 - credits), // Derived for UI meter count
+            isSubscribed: isSubscribed,
+          });
+        } else {
+          // Document does not exist yet. Initialize user profile in Firestore.
+          const currentUser = auth.currentUser;
+          const email = currentUser?.email || "";
+          const username = currentUser?.displayName || email.split("@")[0] || "Developer";
+          const newProfile = {
+            email,
+            username,
+            credits: 25,
+            subscription: false,
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+          };
+          try {
+            await setDoc(userDocRef, newProfile);
+          } catch (err) {
+            console.error("Failed to auto-create user profile in Firestore:", err);
+          }
+        }
+      },
+      (err) => {
+        console.error("Firestore subscribeToUserProfile error:", err);
       }
-    }, (err) => {
-      console.warn("Firebase user profile read failed, using local fallback:", err);
-      onUpdate(getLocalUserProfile(userId));
-    });
+    );
+
     return unsubscribe;
   } catch (err) {
-    console.warn("Firebase user profile subscribe failed:", err);
+    console.error("Firestore subscribeToUserProfile failed:", err);
     return () => {};
   }
 }
 
+/**
+ * Increments the user's message count (decrements credits) in Firestore using a transaction.
+ */
 export async function incrementMessageCount(userId: string): Promise<number> {
-  const profile = getLocalUserProfile(userId);
-  profile.messageCount += 1;
-  saveLocalUserProfile(userId, profile);
+  if (!userId || userId === "guest") return 0;
 
+  const userDocRef = doc(db, "users", userId);
   try {
-    const userRef = ref(database, `users/${userId}`);
-    await set(userRef, profile);
+    const newCount = await runTransaction(db, async (transaction) => {
+      const userDoc = await transaction.get(userDocRef);
+      if (!userDoc.exists()) {
+        throw new Error("User document does not exist during increment transaction.");
+      }
+      const data = userDoc.data();
+      const currentCredits = typeof data.credits === "number" ? data.credits : 25;
+      const newCredits = Math.max(0, currentCredits - 1);
+      
+      transaction.update(userDocRef, {
+        credits: newCredits,
+        updatedAt: Date.now(),
+      });
+
+      return Math.max(0, 25 - newCredits);
+    });
+    return newCount;
   } catch (err) {
-    console.warn("Failed to increment message count in Firebase:", err);
+    console.error("Transaction to decrement credits failed:", err);
+    return 0;
   }
-  return profile.messageCount;
 }
 
+/**
+ * Updates the user's subscription status in Firestore immediately.
+ */
 export async function setSubscriptionStatus(userId: string, isSubscribed: boolean): Promise<void> {
-  const profile = getLocalUserProfile(userId);
-  profile.isSubscribed = isSubscribed;
-  saveLocalUserProfile(userId, profile);
+  if (!userId || userId === "guest") return;
 
+  const userDocRef = doc(db, "users", userId);
   try {
-    const userRef = ref(database, `users/${userId}`);
-    await set(userRef, profile);
+    await updateDoc(userDocRef, {
+      subscription: isSubscribed,
+      updatedAt: Date.now(),
+    });
   } catch (err) {
-    console.warn("Failed to set subscription status in Firebase:", err);
+    console.error("Failed to update subscription status in Firestore:", err);
+    throw err;
   }
 }
