@@ -7,8 +7,8 @@ export async function streamOpenRouterCompletion(
 ): Promise<string> {
   const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY || "";
   
-  // Using Claude 3.5 Sonnet as the "Owl Alpha" model for extremely high-quality design-to-code
-  const model = "anthropic/claude-3.5-sonnet";
+  // Using gpt-4o as the "Owl Alpha" model for extremely high-quality design-to-code
+  const model = "openai/gpt-4o";
   
   const founderContext = `
 IMPORTANT INFO ABOUT CREATION/CREDITS:
