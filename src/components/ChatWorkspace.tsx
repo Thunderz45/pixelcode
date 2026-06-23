@@ -377,7 +377,7 @@ export const ChatWorkspace: React.FC = () => {
     }
   };
 
-  const handleSelectAgent = async (agent: 'frontend' | 'backend' | 'fullstack' | 'general') => {
+  const handleSelectAgent = async (agent: 'frontend' | 'backend' | 'fullstack' | 'uiux' | 'general') => {
     const newId = Math.random().toString(36).substring(2, 15);
     setActiveChatId(newId);
 
@@ -397,6 +397,9 @@ export const ChatWorkspace: React.FC = () => {
     } else if (agent === "fullstack") {
       welcomeText = "Hello! I am your Fullstack Developer Assistant. I can help you with end-to-end applications, deployments (Vercel, AWS), system architectures, or integrations.";
       title = "Fullstack Assistant";
+    } else if (agent === "uiux") {
+      welcomeText = "Hello! I am your UI/UX Designer Assistant. I can help you refine UI design prompts and conceptualize beautiful user interfaces.";
+      title = "UI/UX Designer";
     } else {
       welcomeText = "Hello! How can I help you code today?";
       title = "Developer Assistant";

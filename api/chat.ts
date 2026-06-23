@@ -14,12 +14,12 @@ export default async function handler(req: Request): Promise<Response> {
   }
 
   try {
-    const { messages, model = "llama-3.3-70b-versatile" } = await req.json();
+    const { messages, model = "llama-3.3-70b-versatile", customApiKey } = await req.json();
 
-    const apiKey = process.env.GROQ_API_KEY;
+    const apiKey = customApiKey || process.env.GROQ_API_KEY;
     if (!apiKey) {
       return new Response(
-        JSON.stringify({ error: "GROQ_API_KEY is not configured on Vercel." }), 
+        JSON.stringify({ error: "API Key is not configured." }), 
         {
           status: 500,
           headers: { "Content-Type": "application/json" }

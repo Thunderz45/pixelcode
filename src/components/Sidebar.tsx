@@ -33,8 +33,8 @@ interface SidebarProps {
   onDeleteChat: (id: string, e: React.MouseEvent) => void;
   collapsed?: boolean;
   profile: UserProfile | null;
-  activeAgent?: 'frontend' | 'backend' | 'fullstack' | 'general';
-  onSelectAgent: (agent: 'frontend' | 'backend' | 'fullstack' | 'general') => void;
+  activeAgent?: 'frontend' | 'backend' | 'fullstack' | 'uiux' | 'general';
+  onSelectAgent: (agent: 'frontend' | 'backend' | 'fullstack' | 'uiux' | 'general') => void;
   projects: Project[];
   activeProjectId: string | null;
   onSelectProject: (projectId: string | null) => void;
@@ -188,18 +188,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <span>Fullstack Agent</span>
           </div>
 
-          <a
-            href="https://pixel-ai-studio-liart.vercel.app/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="sidebar-menu-item text-decoration-none"
-            style={{ color: "inherit" }}
+          <div 
+            className={`sidebar-menu-item ${activeAgent === "uiux" ? "active" : ""}`}
+            onClick={() => onSelectAgent("uiux")}
           >
             <div className="agent-icon-wrapper bg-info text-white">
               <ImageIcon size={12} />
             </div>
-            <span>Image Creator</span>
-          </a>
+            <span>UI/UX Designer</span>
+          </div>
         </div>
 
         {/* Projects Section */}

@@ -24,7 +24,7 @@ export interface ChatSession {
   createdAt: number;
   updatedAt: number;
   messages: Message[];
-  agent?: 'frontend' | 'backend' | 'fullstack' | 'general';
+  agent?: 'frontend' | 'backend' | 'fullstack' | 'uiux' | 'general';
   projectId?: string;
 }
 
@@ -188,7 +188,7 @@ export async function saveChatSession(
   chatId: string,
   title: string,
   messages: Message[],
-  agent?: 'frontend' | 'backend' | 'fullstack' | 'general',
+  agent?: 'frontend' | 'backend' | 'fullstack' | 'uiux' | 'general',
   projectId?: string
 ): Promise<void> {
   if (!userId || userId === "guest") return;

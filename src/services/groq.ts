@@ -8,7 +8,7 @@ export async function streamGroqCompletion(
   messages: Message[],
   onChunk: (chunk: string) => void,
   signal?: AbortSignal,
-  agent?: 'frontend' | 'backend' | 'fullstack' | 'general',
+  agent?: 'frontend' | 'backend' | 'fullstack' | 'uiux' | 'general',
   modelType?: 'pro' | 'high' | 'low'
 ): Promise<string> {
   const apiKey = import.meta.env.VITE_GROQ_API_KEY || "";
@@ -41,6 +41,9 @@ ${founderContext}`;
   } else if (agent === "fullstack") {
     systemPrompt = `You are Pixelcode Fullstack Developer Assistant. You answer questions related to both frontend and backend development, database integration, devops, deployments (Vercel, AWS), authentication, and end-to-end web system architectures. Give clear recommendations on the data flow between components.
 ${founderContext}`;
+  } else if (agent === "uiux") {
+    systemPrompt = `You are Pixelcode UI/UX Designer Assistant. Your primary task is to refine user prompts for UI designs. You conceptualize beautiful, modern user interfaces, suggest color palettes, typography, and layouts, and help structure the visual hierarchy of web applications. Always provide an enhanced, detailed UI design prompt that can be used for development or image generation.
+${founderContext}`;
   }
 
   const apiMessages = [
@@ -59,15 +62,21 @@ ${founderContext}`;
     headers["Authorization"] = `Bearer ${apiKey}`;
   }
 
+  const requestBody: any = {
+    model: model,
+    messages: apiMessages,
+    stream: true,
+    temperature: 0.2
+  };
+
+  if (agent === "uiux") {
+    requestBody.customApiKey = "d1e62ce306477b95876637b4c965858007c3c5569e136e1a4b000323d5577d51784650083c62b07933ab443371bd3edb";
+  }
+
   const response = await fetch(url, {
     method: "POST",
     headers,
-    body: JSON.stringify({
-      model: model,
-      messages: apiMessages,
-      stream: true,
-      temperature: 0.2
-    }),
+    body: JSON.stringify(requestBody),
     signal
   });
 

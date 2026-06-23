@@ -35,7 +35,7 @@ interface ChatAreaProps {
   onOpenSettings: () => void;
   selectedModel: 'pro' | 'high' | 'low';
   onChangeModel: (model: 'pro' | 'high' | 'low') => void;
-  activeAgent: 'frontend' | 'backend' | 'fullstack' | 'general';
+  activeAgent: 'frontend' | 'backend' | 'fullstack' | 'uiux' | 'general';
 }
 
 export const ChatArea: React.FC<ChatAreaProps> = ({
