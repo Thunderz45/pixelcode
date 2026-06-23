@@ -3,7 +3,7 @@ import { Sidebar } from "./Sidebar";
 import { ChatArea } from "./ChatArea";
 import { auth } from "../firebase";
 import { type Message, streamGroqCompletion } from "../services/groq";
-import { streamOpenRouterCompletion, streamOpenRouterUIUXCompletion } from "../services/openrouter";
+import { streamOpenRouterCompletion } from "../services/openrouter";
 import { generateImageFromPrompt } from "../services/imageService";
 import { 
   type ChatSession, 
@@ -337,27 +337,6 @@ export const ChatWorkspace: React.FC = () => {
     try {
       if (activeChat?.agent === "designtocode") {
         await streamOpenRouterCompletion(
-          newMessages,
-          (chunk) => {
-            streamedContent += chunk;
-            setChats(prevChats => 
-              prevChats.map(c => {
-                if (c.id === currentId) {
-                  return {
-                    ...c,
-                    messages: c.messages.map(m => 
-                      m.id === assistantMessageId ? { ...m, content: streamedContent } : m
-                    )
-                  };
-                }
-                return c;
-              })
-            );
-          },
-          controller.signal
-        );
-      } else if (activeChat?.agent === "uiux") {
-        await streamOpenRouterUIUXCompletion(
           newMessages,
           (chunk) => {
             streamedContent += chunk;
