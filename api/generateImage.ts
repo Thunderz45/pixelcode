@@ -1,3 +1,5 @@
+import { Buffer } from "node:buffer";
+
 export const config = {
   runtime: 'edge',
 };
