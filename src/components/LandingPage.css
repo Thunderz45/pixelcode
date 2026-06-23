@@ -1,13 +1,13 @@
 :root {
-  --lp-bg: #030712;
-  --lp-glass: rgba(17, 24, 39, 0.7);
-  --lp-border: rgba(255, 255, 255, 0.1);
-  --lp-text: #f9fafb;
-  --lp-text-muted: #9ca3af;
-  --lp-primary: #3b82f6;
-  --lp-primary-hover: #2563eb;
-  --gradient-1: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-  --gradient-2: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
+  --lp-bg: #000000;
+  --lp-glass: rgba(255, 255, 255, 0.05);
+  --lp-border: rgba(255, 255, 255, 0.15);
+  --lp-text: #ffffff;
+  --lp-text-muted: #a1a1aa;
+  --lp-primary: #ffffff;
+  --lp-primary-hover: #e4e4e7;
+  --gradient-1: linear-gradient(135deg, #ffffff 0%, #a1a1aa 100%);
+  --gradient-2: linear-gradient(135deg, #d4d4d8 0%, #71717a 100%);
 }
 
 .landing-container {
@@ -75,7 +75,7 @@
 }
 
 .logo-icon {
-  color: #3b82f6;
+  color: #ffffff;
 }
 
 .logo-text {
@@ -113,13 +113,13 @@ button {
 }
 
 .primary-btn {
-  background: var(--gradient-1);
-  color: white;
+  background: #ffffff;
+  color: #000000;
 }
 
 .primary-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.5);
+  box-shadow: 0 10px 25px -5px rgba(255, 255, 255, 0.3);
 }
 
 .primary-btn.sm {
@@ -181,9 +181,9 @@ button {
 }
 
 .badge {
-  background: rgba(139, 92, 246, 0.1);
-  color: #a78bfa;
-  border: 1px solid rgba(139, 92, 246, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   padding: 6px 16px;
   border-radius: 999px;
   font-size: 0.875rem;
@@ -276,18 +276,18 @@ button {
 }
 
 .feature-icon-wrapper.blue {
-  background: rgba(59, 130, 246, 0.1);
-  color: #3b82f6;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
 }
 
 .feature-icon-wrapper.purple {
-  background: rgba(139, 92, 246, 0.1);
-  color: #8b5cf6;
+  background: rgba(255, 255, 255, 0.1);
+  color: #e4e4e7;
 }
 
 .feature-icon-wrapper.pink {
-  background: rgba(236, 72, 153, 0.1);
-  color: #ec4899;
+  background: rgba(255, 255, 255, 0.1);
+  color: #d4d4d8;
 }
 
 .feature-card h3 {
