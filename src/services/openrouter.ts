@@ -53,7 +53,8 @@ ${founderContext}`;
     model: model,
     messages: apiMessages,
     stream: true,
-    temperature: 0.1 // Low temperature for precise code generation
+    temperature: 0.1, // Low temperature for precise code generation
+    max_tokens: 4000
   };
 
   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
