@@ -1,5 +1,7 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Terminal, Code2, PenTool, Zap, ChevronRight } from "lucide-react";
+import Lottie from "lottie-react";
+import heroAnimation from "../../public/hero-animation.json";
 import "./LandingPage.css";
 
 interface LandingPageProps {
@@ -8,6 +10,32 @@ interface LandingPageProps {
 
 export function LandingPage({ onTryPixelCode }: LandingPageProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const vantaRef = useRef<HTMLDivElement>(null);
+  const [vantaEffect, setVantaEffect] = useState<any>(null);
+
+  useEffect(() => {
+    if (!vantaEffect && vantaRef.current && (window as any).VANTA) {
+      setVantaEffect(
+        (window as any).VANTA.NET({
+          el: vantaRef.current,
+          mouseControls: true,
+          touchControls: true,
+          gyroControls: false,
+          minHeight: 200.00,
+          minWidth: 200.00,
+          scale: 1.00,
+          scaleMobile: 1.00,
+          color: 0xffffff,
+          backgroundColor: 0x0,
+          points: 8.00
+        })
+      );
+    }
+    return () => {
+      if (vantaEffect) vantaEffect.destroy();
+    };
+  }, [vantaEffect]);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -27,11 +55,12 @@ export function LandingPage({ onTryPixelCode }: LandingPageProps) {
 
   return (
     <div className="landing-container" ref={containerRef}>
-      {/* Background glowing effects */}
-      <div className="glow-orb top-left"></div>
-      <div className="glow-orb bottom-right"></div>
-      
-      <header className="landing-header">
+      {/* Vanta.js Background */}
+      <div className="vanta-bg" ref={vantaRef}></div>
+
+      {/* Main Content Wrapper with opacity */}
+      <div className="content-wrapper">
+        <header className="landing-header">
         <div className="logo-container">
           <Terminal className="logo-icon" size={28} />
           <span className="logo-text">PixelCode</span>
@@ -45,21 +74,26 @@ export function LandingPage({ onTryPixelCode }: LandingPageProps) {
 
       <main className="landing-main">
         <section className="hero-section">
-          <div className="badge">Built by PixelStudio</div>
-          <h1 className="hero-title">
-            Code, Design, & Build with <span className="text-gradient">Intelligent AI</span>
-          </h1>
-          <p className="hero-subtitle">
-            PixelCode empowers you with advanced AI agents. From generating high-fidelity UI designs 
-            to converting sketches directly into production-ready React code.
-          </p>
-          <div className="hero-cta-group">
-            <button className="primary-btn lg cta-glow" onClick={onTryPixelCode}>
-              Try PixelCode <ChevronRight size={20} />
-            </button>
-            <button className="secondary-btn lg" onClick={onTryPixelCode}>
-              Explore Features
-            </button>
+          <div className="hero-content">
+            <div className="badge">Built by PixelStudio</div>
+            <h1 className="hero-title">
+              Code, Design, & Build with <span className="text-gradient">Intelligent AI</span>
+            </h1>
+            <p className="hero-subtitle">
+              PixelCode empowers you with advanced AI agents. From generating high-fidelity UI designs 
+              to converting sketches directly into production-ready React code.
+            </p>
+            <div className="hero-cta-group">
+              <button className="primary-btn lg cta-glow" onClick={onTryPixelCode}>
+                Try PixelCode <ChevronRight size={20} />
+              </button>
+              <button className="secondary-btn lg" onClick={onTryPixelCode}>
+                Explore Features
+              </button>
+            </div>
+          </div>
+          <div className="hero-animation">
+            <Lottie animationData={heroAnimation} loop={true} />
           </div>
         </section>
 
@@ -93,6 +127,7 @@ export function LandingPage({ onTryPixelCode }: LandingPageProps) {
       <footer className="landing-footer">
         <p>Created and developed by Bhushan Padghan under PixelStudio.</p>
       </footer>
+      </div>
     </div>
   );
 }
