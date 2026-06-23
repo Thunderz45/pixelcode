@@ -19,8 +19,7 @@ import {
   Code,
   Database,
   Layers,
-  Plus,
-  Download
+  Plus
 } from "lucide-react";
 import { auth } from "../firebase";
 import type { ChatSession, UserProfile, Project } from "../services/db";
@@ -151,15 +150,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <Share2 size={18} />
             <span>Workflow</span>
           </div>
-          <a
-            href="/pixelcode-extension.zip"
-            download="pixelcode-extension.zip"
-            className="sidebar-menu-item text-decoration-none"
-            style={{ color: "inherit" }}
-          >
-            <Download size={18} />
-            <span>Download Extension</span>
-          </a>
         </div>
       </div>
 
