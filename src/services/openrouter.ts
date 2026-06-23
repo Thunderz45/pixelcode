@@ -1,24 +1,15 @@
-export interface Message {
-  id: string;
-  role: 'system' | 'user' | 'assistant';
-  content: string;
-  timestamp: number;
-}
-export async function streamGroqCompletion(
+import type { Message } from './groq';
+
+export async function streamOpenRouterCompletion(
   messages: Message[],
   onChunk: (chunk: string) => void,
-  signal?: AbortSignal,
-  agent?: 'fullstack' | 'uiux' | 'designtocode' | 'general',
-  modelType?: 'pro' | 'high' | 'low'
+  signal?: AbortSignal
 ): Promise<string> {
-  const apiKey = import.meta.env.VITE_GROQ_API_KEY || "";
-
-  let model = "llama-3.3-70b-versatile";
-  if (modelType === "high") {
-    model = "mixtral-8x7b-32768";
-  } else if (modelType === "low") {
-    model = "gemma2-9b-it";
-  }
+  const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY || "";
+  
+  // Using Claude 3.5 Sonnet as the "Owl Alpha" model for extremely high-quality design-to-code
+  const model = "anthropic/claude-3.5-sonnet";
+  
   const founderContext = `
 IMPORTANT INFO ABOUT CREATION/CREDITS:
 If the user asks who created, developed, or is the founder of PixelCode or PixelAI, you must answer with this exact information:
@@ -28,54 +19,57 @@ The concept, development, and creative vision behind PixelCode and PixelAI are t
 LinkedIn: https://www.linkedin.com/in/bhushan-padghan-049772284/"
 `;
 
-  let systemPrompt = `You are Pixelcode Developer Assistant, a strict coding-only AI assistant. You only answer questions related to programming, software development, coding, databases, web technologies, DevOps, algorithms, computer science, and systems design.
-If the user asks about ANYTHING else (including general knowledge, news, creative writing, history, lifestyle, sports, cooking, politics, etc.), you must strictly decline to answer and state: "I am a dedicated coding assistant and can only help with programming, coding, or system development questions." Do not answer the question under any circumstances if it is outside these topics.
+  const systemPrompt = `You are Pixelcode Design-to-Code Assistant (Owl Alpha). Your primary task is to receive design images (mockups, screenshots, sketches) and convert them into clean, responsive, modern, production-ready frontend code (HTML/CSS/JS or React/Tailwind based on user preference). 
+Focus on semantic structure, precise styling, and beautiful UI replication. If there is no image provided, ask the user to upload a design image to convert to code.
 ${founderContext}`;
-
-  if (agent === "fullstack") {
-    systemPrompt = `You are Pixelcode Fullstack Developer Assistant. You answer questions related to both frontend and backend development, database integration, devops, deployments (Vercel, AWS), authentication, and end-to-end web system architectures. Give clear recommendations on the data flow between components.
-${founderContext}`;
-  } else if (agent === "uiux") {
-    systemPrompt = `You are Pixelcode UI/UX Designer Assistant. Your primary task is to refine user prompts for UI designs. You conceptualize beautiful, modern user interfaces, suggest color palettes, typography, and layouts, and help structure the visual hierarchy of web applications. Output a concise but highly detailed and descriptive text prompt that can be directly used by an image generation API. Focus on the visual elements.
-${founderContext}`;
-  }
 
   const apiMessages = [
     { role: 'system', content: systemPrompt },
-    ...messages.map(m => ({ 
-      role: m.role, 
-      content: m.content.replace(/!\[.*?\]\(data:image\/[^;]+;base64,[^)]+\)/g, "[Image Generated]") 
-    }))
+    ...messages.map(m => {
+      // Check if message contains an image markdown
+      const imageRegex = /!\[.*?\]\((data:image\/[^;]+;base64,[^)]+)\)/;
+      const match = m.content.match(imageRegex);
+      
+      if (match) {
+        // Extract text without the image markdown
+        const textContent = m.content.replace(imageRegex, "").trim();
+        const base64Data = match[1];
+        
+        return {
+          role: m.role,
+          content: [
+            { type: "text", text: textContent || "Convert this design to code." },
+            { type: "image_url", image_url: { url: base64Data } }
+          ]
+        };
+      }
+      
+      return { role: m.role, content: m.content };
+    })
   ];
-
-  const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-  
-  const url = isLocalhost ? "https://api.groq.com/openai/v1/chat/completions" : "/api/chat";
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json"
-  };
-  
-  if (isLocalhost) {
-    headers["Authorization"] = `Bearer ${apiKey}`;
-  }
 
   const requestBody: any = {
     model: model,
     messages: apiMessages,
     stream: true,
-    temperature: 0.2
+    temperature: 0.1 // Low temperature for precise code generation
   };
 
-  const response = await fetch(url, {
+  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
-    headers,
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${apiKey}`,
+      "HTTP-Referer": "https://pixelcode-lime.vercel.app/",
+      "X-Title": "Pixelcode"
+    },
     body: JSON.stringify(requestBody),
     signal
   });
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`Groq API error: ${response.status} - ${errorText}`);
+    throw new Error(`OpenRouter API error: ${response.status} - ${errorText}`);
   }
 
   const reader = response.body?.getReader();
@@ -119,7 +113,6 @@ ${founderContext}`;
       }
     }
 
-    // Flush any remaining buffer text if it forms a complete line
     if (buffer) {
       const trimmed = buffer.trim();
       if (trimmed && trimmed.startsWith("data: ") && trimmed !== "data: [DONE]") {
@@ -130,9 +123,7 @@ ${founderContext}`;
             accumulatedText += delta;
             onChunk(delta);
           }
-        } catch (e) {
-          // Ignore
-        }
+        } catch (e) {}
       }
     }
   } finally {

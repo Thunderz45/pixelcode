@@ -17,7 +17,6 @@ import {
   Briefcase,
   ChevronRight,
   Code,
-  Database,
   Layers,
   Plus
 } from "lucide-react";
@@ -33,8 +32,8 @@ interface SidebarProps {
   onDeleteChat: (id: string, e: React.MouseEvent) => void;
   collapsed?: boolean;
   profile: UserProfile | null;
-  activeAgent?: 'frontend' | 'backend' | 'fullstack' | 'uiux' | 'general';
-  onSelectAgent: (agent: 'frontend' | 'backend' | 'fullstack' | 'uiux' | 'general') => void;
+  activeAgent: 'fullstack' | 'uiux' | 'designtocode' | 'general';
+  onSelectAgent: (agent: 'fullstack' | 'uiux' | 'designtocode' | 'general') => void;
   projects: Project[];
   activeProjectId: string | null;
   onSelectProject: (projectId: string | null) => void;
@@ -159,23 +158,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <h2 className="chat-list-title">Agents</h2>
           
           <div 
-            className={`sidebar-menu-item ${activeAgent === "frontend" ? "active" : ""}`}
-            onClick={() => onSelectAgent("frontend")}
+            className={`sidebar-menu-item ${activeAgent === "designtocode" ? "active" : ""}`}
+            onClick={() => onSelectAgent("designtocode")}
           >
             <div className="agent-icon-wrapper bg-primary text-white">
               <Code size={12} />
             </div>
-            <span>Frontend Agent</span>
-          </div>
-          
-          <div 
-            className={`sidebar-menu-item ${activeAgent === "backend" ? "active" : ""}`}
-            onClick={() => onSelectAgent("backend")}
-          >
-            <div className="agent-icon-wrapper bg-success text-white">
-              <Database size={12} />
-            </div>
-            <span>Backend Agent</span>
+            <span>Design-to-Code</span>
           </div>
           
           <div 

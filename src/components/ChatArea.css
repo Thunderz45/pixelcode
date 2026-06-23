@@ -551,13 +551,9 @@
 }
 
 /* Agent Specific Focus Overrides */
-.input-form-wrapper.agent-frontend:focus-within {
-  border-color: #3b82f6 !important;
-  box-shadow: 0 0 12px rgba(59, 130, 246, 0.25) !important;
-}
-.input-form-wrapper.agent-backend:focus-within {
-  border-color: #10b981 !important;
-  box-shadow: 0 0 12px rgba(16, 185, 129, 0.25) !important;
+.input-form-wrapper.agent-designtocode:focus-within {
+  border-color: #8b5cf6 !important;
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.25) !important;
 }
 .input-form-wrapper.agent-fullstack:focus-within {
   border-color: #f59e0b !important;

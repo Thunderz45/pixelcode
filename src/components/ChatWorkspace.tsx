@@ -3,6 +3,7 @@ import { Sidebar } from "./Sidebar";
 import { ChatArea } from "./ChatArea";
 import { auth } from "../firebase";
 import { type Message, streamGroqCompletion } from "../services/groq";
+import { streamOpenRouterCompletion } from "../services/openrouter";
 import { generateImageFromPrompt } from "../services/imageService";
 import { 
   type ChatSession, 
@@ -318,6 +319,7 @@ export const ChatWorkspace: React.FC = () => {
         createdAt: idx >= 0 ? prevChats[idx].createdAt : Date.now(),
         updatedAt: Date.now(),
         messages: messagesWithPlaceholder,
+        agent: activeChat?.agent || 'general',
         projectId: targetProjectId,
       };
       
@@ -333,28 +335,51 @@ export const ChatWorkspace: React.FC = () => {
     let streamedContent = "";
 
     try {
-      await streamGroqCompletion(
-        newMessages,
-        (chunk) => {
-          streamedContent += chunk;
-          setChats(prevChats => 
-            prevChats.map(c => {
-              if (c.id === currentId) {
-                return {
-                  ...c,
-                  messages: c.messages.map(m => 
-                    m.id === assistantMessageId ? { ...m, content: streamedContent } : m
-                  )
-                };
-              }
-              return c;
-            })
-          );
-        },
-        controller.signal,
-        activeChat?.agent,
-        selectedModel
-      );
+      if (activeChat?.agent === "designtocode") {
+        await streamOpenRouterCompletion(
+          newMessages,
+          (chunk) => {
+            streamedContent += chunk;
+            setChats(prevChats => 
+              prevChats.map(c => {
+                if (c.id === currentId) {
+                  return {
+                    ...c,
+                    messages: c.messages.map(m => 
+                      m.id === assistantMessageId ? { ...m, content: streamedContent } : m
+                    )
+                  };
+                }
+                return c;
+              })
+            );
+          },
+          controller.signal
+        );
+      } else {
+        await streamGroqCompletion(
+          newMessages,
+          (chunk) => {
+            streamedContent += chunk;
+            setChats(prevChats => 
+              prevChats.map(c => {
+                if (c.id === currentId) {
+                  return {
+                    ...c,
+                    messages: c.messages.map(m => 
+                      m.id === assistantMessageId ? { ...m, content: streamedContent } : m
+                    )
+                  };
+                }
+                return c;
+              })
+            );
+          },
+          controller.signal,
+          activeChat?.agent,
+          selectedModel
+        );
+      }
 
       if (activeChat?.agent === "uiux") {
         // Step 2: Append loading message and generate image using the generated prompt
@@ -413,7 +438,7 @@ export const ChatWorkspace: React.FC = () => {
     }
   };
 
-  const handleSelectAgent = async (agent: 'frontend' | 'backend' | 'fullstack' | 'uiux' | 'general') => {
+  const handleSelectAgent = async (agent: 'fullstack' | 'uiux' | 'designtocode' | 'general') => {
     const newId = Math.random().toString(36).substring(2, 15);
     setActiveChatId(newId);
 
@@ -424,12 +449,9 @@ export const ChatWorkspace: React.FC = () => {
     let welcomeText = "";
     let title = "";
 
-    if (agent === "frontend") {
-      welcomeText = "Hello! I am your Frontend Developer Assistant. Ask me anything about React, CSS, Tailwind, TypeScript, modern UI design, animations, or browser performance.";
-      title = "Frontend Assistant";
-    } else if (agent === "backend") {
-      welcomeText = "Hello! I am your Backend Developer Assistant. Ask me anything about APIs, databases (SQL/NoSQL), server architecture, authentication, or DevOps.";
-      title = "Backend Assistant";
+    if (agent === "designtocode") {
+      welcomeText = "Hello! I am your Design-to-Code Assistant. Upload any UI mockup, screenshot, or sketch, and I will convert it into clean, responsive frontend code for you!";
+      title = "Design-to-Code";
     } else if (agent === "fullstack") {
       welcomeText = "Hello! I am your Fullstack Developer Assistant. I can help you with end-to-end applications, deployments (Vercel, AWS), system architectures, or integrations.";
       title = "Fullstack Assistant";

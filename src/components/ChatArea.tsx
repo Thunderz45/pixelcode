@@ -4,8 +4,7 @@ import remarkGfm from "remark-gfm";
 import { 
   Send, 
   PanelLeft, 
-  Code, 
-  Database,
+  Code,
   Layers,
   Mic, 
   MicOff, 
@@ -35,7 +34,7 @@ interface ChatAreaProps {
   onOpenSettings: () => void;
   selectedModel: 'pro' | 'high' | 'low';
   onChangeModel: (model: 'pro' | 'high' | 'low') => void;
-  activeAgent: 'frontend' | 'backend' | 'fullstack' | 'uiux' | 'general';
+  activeAgent: 'fullstack' | 'uiux' | 'designtocode' | 'general';
 }
 
 export const ChatArea: React.FC<ChatAreaProps> = ({
@@ -56,10 +55,8 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
 
   const getAgentDetails = () => {
     switch (activeAgent) {
-      case 'frontend':
-        return { name: 'Frontend Agent', color: '#3b82f6', icon: Code, className: 'agent-frontend' };
-      case 'backend':
-        return { name: 'Backend Agent', color: '#10b981', icon: Database, className: 'agent-backend' };
+      case 'designtocode':
+        return { name: 'Design-to-Code Agent', color: '#8b5cf6', icon: Code, className: 'agent-designtocode' };
       case 'fullstack':
         return { name: 'Fullstack Agent', color: '#f59e0b', icon: Layers, className: 'agent-fullstack' };
       default:
