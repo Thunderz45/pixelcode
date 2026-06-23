@@ -46,22 +46,15 @@ export default async function handler(req: Request): Promise<Response> {
       );
     }
 
-    // Clipdrop returns the image as an ArrayBuffer
-    const arrayBuffer = await response.arrayBuffer();
-    
-    // Convert ArrayBuffer to Base64 in Edge runtime securely
-    const base64String = Buffer.from(arrayBuffer).toString('base64');
-
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        image: `data:image/png;base64,${base64String}` 
-      }), 
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json" }
+    // Clipdrop returns the image as an ArrayBuffer or binary stream
+    // Instead of converting it to Base64 in Edge, we just pass the stream back to the client
+    return new Response(response.body, {
+      status: 200,
+      headers: {
+        "Content-Type": response.headers.get("Content-Type") || "image/jpeg",
+        "Cache-Control": "public, max-age=31536000, immutable",
       }
-    );
+    });
   } catch (err: any) {
     return new Response(
       JSON.stringify({ error: err.message || "Internal Server Error" }), 

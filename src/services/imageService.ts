@@ -40,12 +40,26 @@ export async function generateImageFromPrompt(prompt: string): Promise<string> {
       }),
     });
 
-    const data = await response.json();
-
     if (!response.ok) {
-      throw new Error(data.error || "Failed to generate image");
+      let errorMsg = "Failed to generate image";
+      try {
+        const data = await response.json();
+        errorMsg = data.error || errorMsg;
+      } catch (e) {
+        errorMsg = await response.text();
+      }
+      throw new Error(errorMsg);
     }
 
-    return data.image; // returns base64 image data url
+    const arrayBuffer = await response.arrayBuffer();
+    const contentType = response.headers.get("content-type") || "image/jpeg";
+    const blob = new Blob([arrayBuffer], { type: contentType });
+    
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
   }
 }
