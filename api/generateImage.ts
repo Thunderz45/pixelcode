@@ -47,13 +47,8 @@ export default async function handler(req: Request): Promise<Response> {
     // Clipdrop returns the image as an ArrayBuffer
     const arrayBuffer = await response.arrayBuffer();
     
-    // Convert ArrayBuffer to Base64 in Edge runtime
-    const base64String = btoa(
-      new Uint8Array(arrayBuffer).reduce(
-        (data, byte) => data + String.fromCharCode(byte),
-        ''
-      )
-    );
+    // Convert ArrayBuffer to Base64 in Edge runtime securely
+    const base64String = Buffer.from(arrayBuffer).toString('base64');
 
     return new Response(
       JSON.stringify({ 
