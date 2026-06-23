@@ -41,6 +41,9 @@ ${founderContext}`;
   } else if (agent === "fullstack") {
     systemPrompt = `You are Pixelcode Fullstack Developer Assistant. You answer questions related to both frontend and backend development, database integration, devops, deployments (Vercel, AWS), authentication, and end-to-end web system architectures. Give clear recommendations on the data flow between components.
 ${founderContext}`;
+  } else if (agent === "uiux") {
+    systemPrompt = `You are Pixelcode UI/UX Designer Assistant. Your primary task is to refine user prompts for UI designs. You conceptualize beautiful, modern user interfaces, suggest color palettes, typography, and layouts, and help structure the visual hierarchy of web applications. Output a concise but highly detailed and descriptive text prompt that can be directly used by an image generation API. Focus on the visual elements.
+${founderContext}`;
   }
 
   const apiMessages = [

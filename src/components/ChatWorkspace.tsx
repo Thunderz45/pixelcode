@@ -333,14 +333,39 @@ export const ChatWorkspace: React.FC = () => {
     let streamedContent = "";
 
     try {
+      await streamGroqCompletion(
+        newMessages,
+        (chunk) => {
+          streamedContent += chunk;
+          setChats(prevChats => 
+            prevChats.map(c => {
+              if (c.id === currentId) {
+                return {
+                  ...c,
+                  messages: c.messages.map(m => 
+                    m.id === assistantMessageId ? { ...m, content: streamedContent } : m
+                  )
+                };
+              }
+              return c;
+            })
+          );
+        },
+        controller.signal,
+        activeChat?.agent,
+        selectedModel
+      );
+
       if (activeChat?.agent === "uiux") {
+        // Step 2: Append loading message and generate image using the generated prompt
+        const loadingContent = streamedContent + "\n\n🎨 *Generating design...*";
         setChats(prevChats => 
           prevChats.map(c => {
             if (c.id === currentId) {
               return {
                 ...c,
                 messages: c.messages.map(m => 
-                  m.id === assistantMessageId ? { ...m, content: "Generating design based on your prompt..." } : m
+                  m.id === assistantMessageId ? { ...m, content: loadingContent } : m
                 )
               };
             }
@@ -348,8 +373,8 @@ export const ChatWorkspace: React.FC = () => {
           })
         );
         
-        const imageUrl = await generateImageFromPrompt(content);
-        streamedContent = `Here is your generated UI design:\n\n![Generated UI Design](${imageUrl})`;
+        const imageUrl = await generateImageFromPrompt(streamedContent);
+        streamedContent = streamedContent + `\n\n![Generated UI Design](${imageUrl})`;
         
         setChats(prevChats => 
           prevChats.map(c => {
@@ -363,29 +388,6 @@ export const ChatWorkspace: React.FC = () => {
             }
             return c;
           })
-        );
-      } else {
-        await streamGroqCompletion(
-          newMessages,
-          (chunk) => {
-            streamedContent += chunk;
-            setChats(prevChats => 
-              prevChats.map(c => {
-                if (c.id === currentId) {
-                  return {
-                    ...c,
-                    messages: c.messages.map(m => 
-                      m.id === assistantMessageId ? { ...m, content: streamedContent } : m
-                    )
-                  };
-                }
-                return c;
-              })
-            );
-          },
-          controller.signal,
-          activeChat?.agent,
-          selectedModel
         );
       }
 
