@@ -15,7 +15,8 @@ import {
   RotateCw, 
   Trash2, 
   Plus, 
-  Settings 
+  Settings,
+  HeartHandshake 
 } from "lucide-react";
 import { auth } from "../firebase";
 import type { Message } from "../services/groq";
@@ -34,7 +35,7 @@ interface ChatAreaProps {
   onOpenSettings: () => void;
   selectedModel: 'pro' | 'high' | 'low';
   onChangeModel: (model: 'pro' | 'high' | 'low') => void;
-  activeAgent: 'fullstack' | 'uiux' | 'designtocode' | 'general';
+  activeAgent: 'fullstack' | 'uiux' | 'designtocode' | 'sahayak' | 'general';
 }
 
 export const ChatArea: React.FC<ChatAreaProps> = ({
@@ -59,6 +60,8 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
         return { name: 'Design-to-Code Agent', color: '#8b5cf6', icon: Code, className: 'agent-designtocode' };
       case 'fullstack':
         return { name: 'Fullstack Agent', color: '#f59e0b', icon: Layers, className: 'agent-fullstack' };
+      case 'sahayak':
+        return { name: 'Sahayak', color: '#10b981', icon: HeartHandshake, className: 'agent-sahayak' };
       default:
         return null;
     }

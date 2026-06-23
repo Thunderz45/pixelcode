@@ -8,7 +8,7 @@ export async function streamGroqCompletion(
   messages: Message[],
   onChunk: (chunk: string) => void,
   signal?: AbortSignal,
-  agent?: 'fullstack' | 'uiux' | 'designtocode' | 'general',
+  agent?: 'fullstack' | 'uiux' | 'designtocode' | 'sahayak' | 'general',
   modelType?: 'pro' | 'high' | 'low'
 ): Promise<string> {
   const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY || "";

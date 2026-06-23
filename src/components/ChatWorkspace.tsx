@@ -4,6 +4,7 @@ import { ChatArea } from "./ChatArea";
 import { auth } from "../firebase";
 import { type Message, streamGroqCompletion } from "../services/groq";
 import { streamOpenRouterCompletion } from "../services/openrouter";
+import { streamSahayakCompletion } from "../services/sahayak";
 import { generateImageFromPrompt } from "../services/imageService";
 import { 
   type ChatSession, 
@@ -356,6 +357,27 @@ export const ChatWorkspace: React.FC = () => {
           },
           controller.signal
         );
+      } else if (activeChat?.agent === "sahayak") {
+        await streamSahayakCompletion(
+          newMessages,
+          (chunk) => {
+            streamedContent += chunk;
+            setChats(prevChats => 
+              prevChats.map(c => {
+                if (c.id === currentId) {
+                  return {
+                    ...c,
+                    messages: c.messages.map(m => 
+                      m.id === assistantMessageId ? { ...m, content: streamedContent } : m
+                    )
+                  };
+                }
+                return c;
+              })
+            );
+          },
+          controller.signal
+        );
       } else {
         await streamGroqCompletion(
           newMessages,
@@ -438,7 +460,7 @@ export const ChatWorkspace: React.FC = () => {
     }
   };
 
-  const handleSelectAgent = async (agent: 'fullstack' | 'uiux' | 'designtocode' | 'general') => {
+  const handleSelectAgent = async (agent: 'fullstack' | 'uiux' | 'designtocode' | 'sahayak' | 'general') => {
     const newId = Math.random().toString(36).substring(2, 15);
     setActiveChatId(newId);
 
@@ -458,6 +480,9 @@ export const ChatWorkspace: React.FC = () => {
     } else if (agent === "uiux") {
       welcomeText = "Hello! I am your UI/UX Designer Assistant. I can help you refine UI design prompts and conceptualize beautiful user interfaces.";
       title = "UI/UX Designer";
+    } else if (agent === "sahayak") {
+      welcomeText = "Namaste! 🙏 I'm Sahayak — your coding companion and development helper. Whether you need help writing code, debugging issues, planning architecture, or just want to chat about development — I'm here for you! What are you working on today?";
+      title = "Sahayak Assistant";
     } else {
       welcomeText = "Hello! How can I help you code today?";
       title = "Developer Assistant";

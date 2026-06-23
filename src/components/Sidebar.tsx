@@ -18,7 +18,8 @@ import {
   ChevronRight,
   Code,
   Layers,
-  Plus
+  Plus,
+  HeartHandshake
 } from "lucide-react";
 import { auth } from "../firebase";
 import type { ChatSession, UserProfile, Project } from "../services/db";
@@ -32,8 +33,8 @@ interface SidebarProps {
   onDeleteChat: (id: string, e: React.MouseEvent) => void;
   collapsed?: boolean;
   profile: UserProfile | null;
-  activeAgent: 'fullstack' | 'uiux' | 'designtocode' | 'general';
-  onSelectAgent: (agent: 'fullstack' | 'uiux' | 'designtocode' | 'general') => void;
+  activeAgent: 'fullstack' | 'uiux' | 'designtocode' | 'sahayak' | 'general';
+  onSelectAgent: (agent: 'fullstack' | 'uiux' | 'designtocode' | 'sahayak' | 'general') => void;
   projects: Project[];
   activeProjectId: string | null;
   onSelectProject: (projectId: string | null) => void;
@@ -185,6 +186,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <ImageIcon size={12} />
             </div>
             <span>UI/UX Designer</span>
+          </div>
+
+          <div 
+            className={`sidebar-menu-item ${activeAgent === "sahayak" ? "active" : ""}`}
+            onClick={() => onSelectAgent("sahayak")}
+          >
+            <div className="agent-icon-wrapper" style={{ backgroundColor: "#10b981" }}>
+              <HeartHandshake size={12} color="#fff" />
+            </div>
+            <span>Sahayak</span>
+            <span style={{ 
+              fontSize: "0.6rem", 
+              backgroundColor: "rgba(16, 185, 129, 0.15)", 
+              color: "#10b981", 
+              padding: "1px 6px", 
+              borderRadius: "4px", 
+              fontWeight: 600,
+              marginLeft: "auto",
+              letterSpacing: "0.5px"
+            }}>NEW</span>
           </div>
         </div>
 
