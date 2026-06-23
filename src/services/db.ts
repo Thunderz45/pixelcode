@@ -37,6 +37,7 @@ export interface UserProfile {
   updatedAt: number;
   messageCount: number; // Derived virtual field for UI compatibility
   isSubscribed: boolean; // Derived virtual field for UI compatibility
+  activeProjectId?: string | null; // Synced active project ID
 }
 
 /**
@@ -300,6 +301,7 @@ export function subscribeToUserProfile(
       updatedAt: Date.now(),
       messageCount: 0,
       isSubscribed: false,
+      activeProjectId: null,
     });
     return () => {};
   }
@@ -322,6 +324,7 @@ export function subscribeToUserProfile(
             updatedAt: data.updatedAt || Date.now(),
             messageCount: Math.max(0, 25 - credits), // Derived for UI meter count
             isSubscribed: isSubscribed,
+            activeProjectId: data.activeProjectId || null,
           });
         } else {
           // Document does not exist yet. Initialize user profile in Firestore.
@@ -335,6 +338,7 @@ export function subscribeToUserProfile(
             subscription: false,
             createdAt: Date.now(),
             updatedAt: Date.now(),
+            activeProjectId: null,
           };
           try {
             await setDoc(userDocRef, newProfile);
@@ -403,5 +407,23 @@ export async function setSubscriptionStatus(userId: string, isSubscribed: boolea
   } catch (err) {
     console.error("Failed to update subscription status in Firestore:", err);
     throw err;
+  }
+}
+
+/**
+ * Updates the user's active project ID in Firestore to sync across devices.
+ */
+export async function setActiveProjectInProfile(userId: string, projectId: string | null): Promise<void> {
+  if (!userId || userId === "guest") return;
+
+  const userDocRef = doc(db, "users", userId);
+  try {
+    await updateDoc(userDocRef, {
+      activeProjectId: projectId,
+      updatedAt: Date.now(),
+    });
+  } catch (err) {
+    // If the document doesn't exist yet, it's fine, it will be created by subscribeToUserProfile
+    console.error("Failed to update active project ID in Firestore:", err);
   }
 }

@@ -13,7 +13,8 @@ import {
   type Project,
   saveProject,
   subscribeToProjects,
-  deleteProject
+  deleteProject,
+  setActiveProjectInProfile
 } from "../services/db";
 import { SettingsModal } from "./SettingsModal";
 import { InfoModal } from "./InfoModal";
@@ -80,6 +81,22 @@ export const ChatWorkspace: React.FC = () => {
       userId,
       (updatedProfile) => {
         setProfile(updatedProfile);
+        
+        // Sync active project from other devices if available
+        setActiveProjectId((prev) => {
+          // Don't sync if local state is already matching
+          if (prev !== updatedProfile.activeProjectId) {
+            try {
+              if (updatedProfile.activeProjectId) {
+                localStorage.setItem(`pixelcode_active_project_id_${userId}`, updatedProfile.activeProjectId);
+              } else {
+                localStorage.removeItem(`pixelcode_active_project_id_${userId}`);
+              }
+            } catch (e) {}
+            return updatedProfile.activeProjectId || null;
+          }
+          return prev;
+        });
       },
       (err) => {
         if (err.message.includes("permission") || err.message.includes("PERMISSION_DENIED")) {
@@ -145,6 +162,10 @@ export const ChatWorkspace: React.FC = () => {
     } catch (e) {
       console.error("Failed to save active project id:", e);
     }
+    
+    // Sync to profile for cross-device roaming
+    setActiveProjectInProfile(userId, projectId);
+
     const projectChats = projectId 
       ? chats.filter((c) => c.projectId === projectId)
       : chats;
@@ -421,6 +442,7 @@ export const ChatWorkspace: React.FC = () => {
     } catch (e) {
       console.error("Failed to save active project id:", e);
     }
+    setActiveProjectInProfile(userId, projId);
     setActiveChatId(null);
     await saveProject(userId, projId, name);
   };

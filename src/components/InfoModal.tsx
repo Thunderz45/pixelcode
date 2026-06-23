@@ -40,7 +40,6 @@ export const InfoModal: React.FC<InfoModalProps> = ({
   const [reportSuccess, setReportSuccess] = useState(false);
 
 
-
   if (!isOpen || !mode) return null;
 
   const handleProjectSubmit = (e: React.FormEvent) => {
