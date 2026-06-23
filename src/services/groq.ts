@@ -48,7 +48,10 @@ ${founderContext}`;
 
   const apiMessages = [
     { role: 'system', content: systemPrompt },
-    ...messages.map(m => ({ role: m.role, content: m.content }))
+    ...messages.map(m => ({ 
+      role: m.role, 
+      content: m.content.replace(/!\[.*?\]\(data:image\/[^;]+;base64,[^)]+\)/g, "[Image Generated]") 
+    }))
   ];
 
   const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";

@@ -1,5 +1,3 @@
-import { Buffer } from "node:buffer";
-
 export const config = {
   runtime: 'edge',
 };
@@ -14,7 +12,7 @@ export default async function handler(req: Request): Promise<Response> {
 
     if (!prompt) {
       return new Response(
-        JSON.stringify({ error: "Prompt is required." }), 
+        JSON.stringify({ error: "Prompt is required." }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
@@ -22,7 +20,7 @@ export default async function handler(req: Request): Promise<Response> {
     const apiKey = customApiKey;
     if (!apiKey) {
       return new Response(
-        JSON.stringify({ error: "API Key is not configured." }), 
+        JSON.stringify({ error: "API Key is not configured." }),
         { status: 500, headers: { "Content-Type": "application/json" } }
       );
     }
@@ -41,7 +39,7 @@ export default async function handler(req: Request): Promise<Response> {
     if (!response.ok) {
       const errorText = await response.text();
       return new Response(
-        JSON.stringify({ error: `Clipdrop API returned error: ${response.status} - ${errorText}` }), 
+        JSON.stringify({ error: `Clipdrop API returned error: ${response.status} - ${errorText}` }),
         { status: response.status, headers: { "Content-Type": "application/json" } }
       );
     }
@@ -57,7 +55,7 @@ export default async function handler(req: Request): Promise<Response> {
     });
   } catch (err: any) {
     return new Response(
-      JSON.stringify({ error: err.message || "Internal Server Error" }), 
+      JSON.stringify({ error: err.message || "Internal Server Error" }),
       { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }

@@ -358,7 +358,7 @@ export const ChatWorkspace: React.FC = () => {
 
       if (activeChat?.agent === "uiux") {
         // Step 2: Append loading message and generate image using the generated prompt
-        const loadingContent = streamedContent + "\n\n🎨 *Generating design...*";
+        const loadingContent = streamedContent + "\n\n![Loading...](https://raw.githubusercontent.com/Codelessly/FlutterLoadingGIFs/master/packages/cupertino_activity_indicator.gif)\n*Generating high-fidelity UI design...*";
         setChats(prevChats => 
           prevChats.map(c => {
             if (c.id === currentId) {
