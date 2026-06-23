@@ -376,6 +376,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
 
                   <div className="markdown-content">
                     <ReactMarkdown
+                      urlTransform={(value: string) => value}
                       remarkPlugins={[remarkGfm]}
                       components={{
                         code({ className, children, ...props }) {
