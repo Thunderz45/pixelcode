@@ -16,11 +16,13 @@ import {
   Trash2, 
   Plus, 
   Settings,
-  HeartHandshake 
+  HeartHandshake,
+  AudioLines
 } from "lucide-react";
 import { auth } from "../firebase";
 import type { Message } from "../services/groq";
 import { CodeBlock } from "./CodeBlock";
+import { SahayakVoiceMode } from "./SahayakVoiceMode";
 import "./ChatArea.css";
 
 interface ChatAreaProps {
@@ -53,6 +55,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
   activeAgent,
 }) => {
   const [input, setInput] = useState("");
+  const [voiceModeOpen, setVoiceModeOpen] = useState(false);
 
   const getAgentDetails = () => {
     switch (activeAgent) {
@@ -274,6 +277,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
   };
 
   return (
+    <>
     <div className="chat-area">
       <div id="vanta-chat-background" className="vanta-chat-bg"></div>
 
@@ -306,6 +310,16 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
         </div>
         
         <div className="chat-header-actions d-flex align-items-center gap-2">
+          {activeAgent === 'sahayak' && (
+            <button 
+              className="sahayak-voice-trigger-btn"
+              onClick={() => setVoiceModeOpen(true)}
+              title="Start Voice Conversation"
+            >
+              <AudioLines size={15} />
+              <span>Voice</span>
+            </button>
+          )}
           <button className="header-action-btn" title="Activity Wave">
             <Activity size={18} />
           </button>
@@ -642,5 +656,15 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
         </p>
       </div>
     </div>
+
+    {/* Sahayak Voice Mode Overlay */}
+    <SahayakVoiceMode
+      isOpen={voiceModeOpen}
+      onClose={() => setVoiceModeOpen(false)}
+      onSendMessage={onSendMessage}
+      isLoading={isLoading}
+      messages={messages}
+    />
+    </>
   );
 };

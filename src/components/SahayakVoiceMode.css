@@ -1,0 +1,464 @@
+/* =============================================
+   SAHAYAK VOICE MODE — Full-Screen Overlay
+   ============================================= */
+
+.sahayak-voice-overlay {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(
+      ellipse at 50% 40%,
+      rgba(16, 185, 129, 0.08) 0%,
+      rgba(0, 0, 0, 0.97) 70%
+    ),
+    #000000;
+  backdrop-filter: blur(60px);
+  -webkit-backdrop-filter: blur(60px);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  animation: sahayak-overlay-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes sahayak-overlay-in {
+  from {
+    opacity: 0;
+    transform: scale(1.05);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Close Button */
+.sahayak-voice-close {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #a1a1aa;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.sahayak-voice-close:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+  transform: scale(1.05);
+}
+
+/* Brand */
+.sahayak-voice-brand {
+  position: absolute;
+  top: 32px;
+  left: 32px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sahayak-voice-brand-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+  animation: sahayak-brand-pulse 2s ease-in-out infinite;
+}
+
+@keyframes sahayak-brand-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* Main Content */
+.sahayak-voice-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  text-align: center;
+  padding: 24px;
+  max-width: 600px;
+  width: 100%;
+}
+
+/* State Label */
+.sahayak-voice-state-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  transition: color 0.3s ease;
+}
+
+.sahayak-voice-state-label.state-listening {
+  color: #10b981;
+}
+
+.sahayak-voice-state-label.state-processing {
+  color: #a78bfa;
+}
+
+.sahayak-voice-state-label.state-speaking {
+  color: #38bdf8;
+}
+
+/* =============================================
+   THE ORB
+   ============================================= */
+
+.sahayak-voice-orb {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sahayak-voice-orb-inner {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 5;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* LISTENING state orb */
+.sahayak-voice-orb.state-listening .sahayak-voice-orb-inner {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+  box-shadow: 
+    0 0 40px rgba(16, 185, 129, 0.4),
+    0 0 80px rgba(16, 185, 129, 0.15),
+    inset 0 -4px 12px rgba(0, 0, 0, 0.2);
+  animation: sahayak-orb-breathe 2.5s ease-in-out infinite;
+}
+
+@keyframes sahayak-orb-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
+
+/* PROCESSING state orb */
+.sahayak-voice-orb.state-processing .sahayak-voice-orb-inner {
+  background: linear-gradient(135deg, #7c3aed, #a78bfa);
+  color: #ffffff;
+  box-shadow: 
+    0 0 40px rgba(124, 58, 237, 0.35),
+    0 0 80px rgba(124, 58, 237, 0.1),
+    inset 0 -4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* SPEAKING state orb */
+.sahayak-voice-orb.state-speaking .sahayak-voice-orb-inner {
+  background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+  color: #ffffff;
+  box-shadow: 
+    0 0 40px rgba(14, 165, 233, 0.4),
+    0 0 80px rgba(14, 165, 233, 0.15),
+    inset 0 -4px 12px rgba(0, 0, 0, 0.2);
+  animation: sahayak-orb-speak-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes sahayak-orb-speak-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+
+/* Spinner for processing */
+.sahayak-voice-spinner {
+  animation: sahayak-spin 1.2s linear infinite;
+}
+
+@keyframes sahayak-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* =============================================
+   PULSE RINGS (LISTENING)
+   ============================================= */
+
+.sahayak-pulse-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 2px solid rgba(16, 185, 129, 0.4);
+  transform: translate(-50%, -50%) scale(1);
+  animation: sahayak-pulse-expand 3s ease-out infinite;
+}
+
+.sahayak-pulse-ring.ring-1 {
+  animation-delay: 0s;
+}
+
+.sahayak-pulse-ring.ring-2 {
+  animation-delay: 1s;
+}
+
+.sahayak-pulse-ring.ring-3 {
+  animation-delay: 2s;
+}
+
+@keyframes sahayak-pulse-expand {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2.5);
+    opacity: 0;
+  }
+}
+
+/* =============================================
+   PROCESSING RING
+   ============================================= */
+
+.sahayak-processing-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-top-color: #a78bfa;
+  border-right-color: rgba(167, 139, 250, 0.3);
+  transform: translate(-50%, -50%);
+  animation: sahayak-processing-spin 1.5s linear infinite;
+}
+
+@keyframes sahayak-processing-spin {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* =============================================
+   SOUND WAVES (SPEAKING)
+   ============================================= */
+
+.sahayak-sound-waves {
+  position: absolute;
+  bottom: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 28px;
+}
+
+.sahayak-wave-bar {
+  width: 4px;
+  border-radius: 4px;
+  background: linear-gradient(to top, #0ea5e9, #38bdf8);
+  animation: sahayak-wave 1.2s ease-in-out infinite;
+}
+
+.sahayak-wave-bar.bar-1 { height: 8px; animation-delay: 0s; }
+.sahayak-wave-bar.bar-2 { height: 16px; animation-delay: 0.1s; }
+.sahayak-wave-bar.bar-3 { height: 24px; animation-delay: 0.2s; }
+.sahayak-wave-bar.bar-4 { height: 28px; animation-delay: 0.3s; }
+.sahayak-wave-bar.bar-5 { height: 24px; animation-delay: 0.2s; }
+.sahayak-wave-bar.bar-6 { height: 16px; animation-delay: 0.1s; }
+.sahayak-wave-bar.bar-7 { height: 8px; animation-delay: 0s; }
+
+@keyframes sahayak-wave {
+  0%, 100% { transform: scaleY(0.4); opacity: 0.5; }
+  50% { transform: scaleY(1); opacity: 1; }
+}
+
+/* =============================================
+   TRANSCRIPT
+   ============================================= */
+
+.sahayak-voice-transcript {
+  min-height: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  max-width: 520px;
+  width: 100%;
+}
+
+.sahayak-voice-text {
+  font-size: 1.05rem;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.6;
+  margin: 0;
+  max-height: 120px;
+  overflow-y: auto;
+  text-align: center;
+}
+
+/* Stream dots animation */
+.sahayak-voice-stream-dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.sahayak-voice-stream-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #a78bfa;
+  animation: sahayak-stream-dot 1.4s ease-in-out infinite both;
+}
+
+.sahayak-voice-stream-dots span:nth-child(1) { animation-delay: -0.32s; }
+.sahayak-voice-stream-dots span:nth-child(2) { animation-delay: -0.16s; }
+.sahayak-voice-stream-dots span:nth-child(3) { animation-delay: 0s; }
+
+@keyframes sahayak-stream-dot {
+  0%, 80%, 100% { transform: scale(0.4); opacity: 0.3; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+/* =============================================
+   HINT
+   ============================================= */
+
+.sahayak-voice-hint {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.35);
+  letter-spacing: 0.3px;
+}
+
+/* =============================================
+   FOOTER STATE INDICATOR
+   ============================================= */
+
+.sahayak-voice-footer {
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.sahayak-state-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  border-radius: 100px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  border: 1px solid;
+  transition: all 0.3s ease;
+}
+
+.sahayak-state-indicator.state-listening {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+}
+
+.sahayak-state-indicator.state-processing {
+  background: rgba(124, 58, 237, 0.08);
+  border-color: rgba(124, 58, 237, 0.2);
+  color: #a78bfa;
+}
+
+.sahayak-state-indicator.state-speaking {
+  background: rgba(14, 165, 233, 0.08);
+  border-color: rgba(14, 165, 233, 0.2);
+  color: #38bdf8;
+}
+
+.sahayak-state-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: sahayak-state-blink 1.5s ease-in-out infinite;
+}
+
+@keyframes sahayak-state-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* =============================================
+   MOBILE RESPONSIVE
+   ============================================= */
+
+@media (max-width: 576px) {
+  .sahayak-voice-close {
+    top: 16px;
+    right: 16px;
+    width: 40px;
+    height: 40px;
+  }
+
+  .sahayak-voice-brand {
+    top: 20px;
+    left: 20px;
+    font-size: 0.8rem;
+  }
+
+  .sahayak-voice-orb-inner {
+    width: 100px;
+    height: 100px;
+  }
+
+  .sahayak-voice-orb-inner svg {
+    width: 36px;
+    height: 36px;
+  }
+
+  .sahayak-pulse-ring {
+    width: 100px;
+    height: 100px;
+  }
+
+  .sahayak-processing-ring {
+    width: 120px;
+    height: 120px;
+  }
+
+  .sahayak-voice-text {
+    font-size: 0.95rem;
+  }
+
+  .sahayak-voice-footer {
+    bottom: 20px;
+  }
+
+  .sahayak-state-indicator {
+    font-size: 0.7rem;
+    padding: 6px 14px;
+  }
+}

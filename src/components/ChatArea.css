@@ -550,6 +550,30 @@
   display: block;
 }
 
+/* Sahayak Voice Mode Trigger Button */
+.sahayak-voice-trigger-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: 0.3px;
+}
+
+.sahayak-voice-trigger-btn:hover {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: rgba(16, 185, 129, 0.5);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.2);
+  transform: scale(1.02);
+}
+
 /* Agent Specific Focus Overrides */
 .input-form-wrapper.agent-designtocode:focus-within {
   border-color: #8b5cf6 !important;
