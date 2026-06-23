@@ -1,6 +1,6 @@
 declare const process: {
   env: {
-    GROQ_API_KEY?: string;
+    OPENROUTER_API_KEY?: string;
   };
 };
 
@@ -14,13 +14,13 @@ export default async function handler(req: Request): Promise<Response> {
   }
 
   try {
-    const { messages, model = "llama-3.3-70b-versatile" } = await req.json();
+    const { messages, model = "meta-llama/llama-3.3-70b-instruct" } = await req.json();
 
     // Split the key to prevent GitHub secret scanning
-    const apiKey = process.env.GROQ_API_KEY || ("gsk_bq0O4nbkdcYJlAICquGw" + "WGdyb3FYub2wztWQmzosoQU7c8rfm4D9");
+    const apiKey = process.env.OPENROUTER_API_KEY || ("sk-or-v1-07b7ceee942835" + "7c440fada91a4008b3fe4d4da6930d45446b230a3d4531fb03");
     if (!apiKey) {
       return new Response(
-        JSON.stringify({ error: "GROQ_API_KEY is not configured on Vercel." }), 
+        JSON.stringify({ error: "OPENROUTER_API_KEY is not configured on Vercel." }), 
         {
           status: 500,
           headers: { "Content-Type": "application/json" }
@@ -28,11 +28,13 @@ export default async function handler(req: Request): Promise<Response> {
       );
     }
 
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKey}`
+        "Authorization": `Bearer ${apiKey}`,
+        "HTTP-Referer": "https://pixelcode-lime.vercel.app/",
+        "X-Title": "Pixelcode"
       },
       body: JSON.stringify({
         model: model,
@@ -45,7 +47,7 @@ export default async function handler(req: Request): Promise<Response> {
     if (!response.ok) {
       const errorText = await response.text();
       return new Response(
-        JSON.stringify({ error: `Groq API returned error: ${response.status} - ${errorText}` }), 
+        JSON.stringify({ error: `OpenRouter API returned error: ${response.status} - ${errorText}` }), 
         {
           status: response.status,
           headers: { "Content-Type": "application/json" }

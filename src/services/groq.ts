@@ -11,13 +11,13 @@ export async function streamGroqCompletion(
   agent?: 'fullstack' | 'uiux' | 'designtocode' | 'general',
   modelType?: 'pro' | 'high' | 'low'
 ): Promise<string> {
-  const apiKey = import.meta.env.VITE_GROQ_API_KEY || "";
+  const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY || "";
 
-  let model = "llama-3.3-70b-versatile";
+  let model = "meta-llama/llama-3.3-70b-instruct";
   if (modelType === "high") {
-    model = "mixtral-8x7b-32768";
+    model = "mistralai/mixtral-8x7b-instruct";
   } else if (modelType === "low") {
-    model = "gemma2-9b-it";
+    model = "google/gemma-2-9b-it";
   }
   const founderContext = `
 IMPORTANT INFO ABOUT CREATION/CREDITS:
@@ -50,13 +50,15 @@ ${founderContext}`;
 
   const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
   
-  const url = isLocalhost ? "https://api.groq.com/openai/v1/chat/completions" : "/api/chat";
+  const url = isLocalhost ? "https://openrouter.ai/api/v1/chat/completions" : "/api/chat";
   const headers: Record<string, string> = {
     "Content-Type": "application/json"
   };
   
   if (isLocalhost) {
     headers["Authorization"] = `Bearer ${apiKey}`;
+    headers["HTTP-Referer"] = "https://pixelcode-lime.vercel.app/";
+    headers["X-Title"] = "Pixelcode";
   }
 
   const requestBody: any = {
@@ -75,7 +77,7 @@ ${founderContext}`;
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`Groq API error: ${response.status} - ${errorText}`);
+    throw new Error(`OpenRouter API error: ${response.status} - ${errorText}`);
   }
 
   const reader = response.body?.getReader();

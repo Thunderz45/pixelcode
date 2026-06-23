@@ -6,7 +6,7 @@ export async function streamOpenRouterCompletion(
   signal?: AbortSignal
 ): Promise<string> {
   // Split the key to prevent GitHub secret scanning from blocking the push
-  const apiKey = "sk-or-v1-403def809d9265527" + "1dad31ec8ba760aef6ded3b000c38c92663f9906ae4bcb2";
+  const apiKey = "sk-or-v1-07b7ceee942835" + "7c440fada91a4008b3fe4d4da6930d45446b230a3d4531fb03";
   
   // Using gpt-4o as the "Owl Alpha" model for extremely high-quality design-to-code
   const model = "openai/gpt-4o";

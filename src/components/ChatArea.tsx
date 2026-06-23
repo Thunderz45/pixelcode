@@ -635,10 +635,9 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
           </div>
         </form>
         <p className="input-footer-text">
-          Pixelcode. Powered by Pixelstudio & Groq.
+          Pixelcode. Powered by Pixelstudio & OpenRouter.
         </p>
       </div>
     </div>
   );
 };
-
