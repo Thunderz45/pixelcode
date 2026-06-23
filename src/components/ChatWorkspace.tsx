@@ -3,6 +3,7 @@ import { Sidebar } from "./Sidebar";
 import { ChatArea } from "./ChatArea";
 import { auth } from "../firebase";
 import { type Message, streamGroqCompletion } from "../services/groq";
+import { generateImageFromPrompt } from "../services/imageService";
 import { 
   type ChatSession, 
   saveChatSession, 
@@ -332,28 +333,61 @@ export const ChatWorkspace: React.FC = () => {
     let streamedContent = "";
 
     try {
-      await streamGroqCompletion(
-        newMessages,
-        (chunk) => {
-          streamedContent += chunk;
-          setChats(prevChats => 
-            prevChats.map(c => {
-              if (c.id === currentId) {
-                return {
-                  ...c,
-                  messages: c.messages.map(m => 
-                    m.id === assistantMessageId ? { ...m, content: streamedContent } : m
-                  )
-                };
-              }
-              return c;
-            })
-          );
-        },
-        controller.signal,
-        activeChat?.agent,
-        selectedModel
-      );
+      if (activeChat?.agent === "uiux") {
+        setChats(prevChats => 
+          prevChats.map(c => {
+            if (c.id === currentId) {
+              return {
+                ...c,
+                messages: c.messages.map(m => 
+                  m.id === assistantMessageId ? { ...m, content: "Generating design based on your prompt..." } : m
+                )
+              };
+            }
+            return c;
+          })
+        );
+        
+        const imageUrl = await generateImageFromPrompt(content);
+        streamedContent = `Here is your generated UI design:\n\n![Generated UI Design](${imageUrl})`;
+        
+        setChats(prevChats => 
+          prevChats.map(c => {
+            if (c.id === currentId) {
+              return {
+                ...c,
+                messages: c.messages.map(m => 
+                  m.id === assistantMessageId ? { ...m, content: streamedContent } : m
+                )
+              };
+            }
+            return c;
+          })
+        );
+      } else {
+        await streamGroqCompletion(
+          newMessages,
+          (chunk) => {
+            streamedContent += chunk;
+            setChats(prevChats => 
+              prevChats.map(c => {
+                if (c.id === currentId) {
+                  return {
+                    ...c,
+                    messages: c.messages.map(m => 
+                      m.id === assistantMessageId ? { ...m, content: streamedContent } : m
+                    )
+                  };
+                }
+                return c;
+              })
+            );
+          },
+          controller.signal,
+          activeChat?.agent,
+          selectedModel
+        );
+      }
 
       // Save complete session with streamed content to DB
       const finalAssistantMessage = { ...assistantMessage, content: streamedContent };
@@ -366,7 +400,7 @@ export const ChatWorkspace: React.FC = () => {
         console.error("Completion error:", err);
         const errorAssistantMessage = { 
           ...assistantMessage, 
-          content: "Sorry, I encountered an error communicating with the Groq API. Please check your network connection or API configuration." 
+          content: `Sorry, I encountered an error: ${err.message || "Please check your network connection or API configuration."}` 
         };
         const finalMessages = [...newMessages, errorAssistantMessage];
         await saveChatSession(userId, currentId, currentTitle, finalMessages, activeChat?.agent, targetProjectId);
