@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "PixelCode AI Copilot",
+  "version": "1.0.0",
+  "description": "Floating, draggable AI coding assistant for every website.",
+  "permissions": ["storage", "activeTab", "scripting"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "src/background/index.ts",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["src/content/index.tsx"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["assets/*", "src/index.css"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "action": {
+    "default_title": "PixelCode AI"
+  }
+}

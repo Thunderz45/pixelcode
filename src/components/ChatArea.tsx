@@ -100,6 +100,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const recognitionRef = useRef<any>(null);
+
   useEffect(() => {
     let effect: any = null;
     const initVanta = () => {
@@ -115,7 +116,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
             scale: 1.00,
             scaleMobile: 1.00,
             color: 0xffffff,
-            backgroundColor: 0x0d0d0d
+            backgroundColor: 0x0
           });
         } catch (err) {
           console.error("Vanta initialization failed:", err);
@@ -275,6 +276,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
   return (
     <div className="chat-area">
       <div id="vanta-chat-background" className="vanta-chat-bg"></div>
+
       
       <header className="chat-header d-flex align-items-center justify-content-between">
         <div className="chat-header-title d-flex align-items-center gap-2">

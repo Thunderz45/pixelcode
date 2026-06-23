@@ -95,7 +95,8 @@ export async function saveProject(
  */
 export function subscribeToProjects(
   userId: string,
-  onUpdate: (projects: Project[]) => void
+  onUpdate: (projects: Project[]) => void,
+  onError?: (err: Error) => void
 ): () => void {
   const getLocalProjects = (): Project[] => {
     try {
@@ -137,13 +138,15 @@ export function subscribeToProjects(
       },
       (err) => {
         console.error("Firestore subscribeToProjects error, falling back to localStorage:", err);
+        if (onError) onError(err);
         onUpdate(getLocalProjects());
       }
     );
 
     return unsubscribe;
-  } catch (err) {
+  } catch (err: any) {
     console.error("Firestore subscribeToProjects failed, falling back to localStorage:", err);
+    if (onError) onError(err);
     onUpdate(getLocalProjects());
     return () => {};
   }
@@ -220,7 +223,8 @@ export async function saveChatSession(
  */
 export function subscribeToChats(
   userId: string,
-  onUpdate: (chats: ChatSession[]) => void
+  onUpdate: (chats: ChatSession[]) => void,
+  onError?: (err: Error) => void
 ): () => void {
   if (!userId || userId === "guest") {
     onUpdate([]);
@@ -250,12 +254,14 @@ export function subscribeToChats(
       },
       (err) => {
         console.error("Firestore subscribeToChats error:", err);
+        if (onError) onError(err);
       }
     );
 
     return unsubscribe;
-  } catch (err) {
+  } catch (err: any) {
     console.error("Firestore subscribeToChats failed:", err);
+    if (onError) onError(err);
     return () => {};
   }
 }
@@ -281,7 +287,8 @@ export async function deleteChatSession(userId: string, chatId: string): Promise
  */
 export function subscribeToUserProfile(
   userId: string,
-  onUpdate: (profile: UserProfile) => void
+  onUpdate: (profile: UserProfile) => void,
+  onError?: (err: Error) => void
 ): () => void {
   if (!userId || userId === "guest") {
     onUpdate({
@@ -338,12 +345,14 @@ export function subscribeToUserProfile(
       },
       (err) => {
         console.error("Firestore subscribeToUserProfile error:", err);
+        if (onError) onError(err);
       }
     );
 
     return unsubscribe;
-  } catch (err) {
+  } catch (err: any) {
     console.error("Firestore subscribeToUserProfile failed:", err);
+    if (onError) onError(err);
     return () => {};
   }
 }

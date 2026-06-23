@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
@@ -15,6 +15,49 @@ export const Auth: React.FC = () => {
   const [displayName, setDisplayName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    let effect: any = null;
+    const initVanta = () => {
+      if ((window as any).VANTA && (window as any).VANTA.WAVES) {
+        try {
+          effect = (window as any).VANTA.WAVES({
+            el: "#vanta-waves-background",
+            mouseControls: true,
+            touchControls: true,
+            gyroControls: false,
+            minHeight: 200.00,
+            minWidth: 200.00,
+            scale: 1.00,
+            scaleMobile: 1.00,
+            color: 0x0,
+            shininess: 60.00
+          });
+        } catch (err) {
+          console.error("Vanta WAVES initialization failed:", err);
+        }
+      }
+    };
+
+    if (!(window as any).VANTA || !(window as any).VANTA.WAVES) {
+      const interval = setInterval(() => {
+        if ((window as any).VANTA && (window as any).VANTA.WAVES) {
+          initVanta();
+          clearInterval(interval);
+        }
+      }, 100);
+      return () => {
+        clearInterval(interval);
+        if (effect) effect.destroy();
+      };
+    } else {
+      initVanta();
+    }
+
+    return () => {
+      if (effect) effect.destroy();
+    };
+  }, []);
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -57,6 +100,10 @@ export const Auth: React.FC = () => {
         friendlyError = "Password is too weak. Make it at least 6 characters.";
       } else if (err.code === "auth/invalid-credential") {
         friendlyError = "Incorrect email or password. Please try again.";
+      } else if (err.code === "auth/operation-not-allowed") {
+        friendlyError = "Email/Password sign-in is disabled in your Firebase console. Please enable it under Authentication > Sign-in method.";
+      } else if (err.code) {
+        friendlyError = `Authentication failed (${err.code}). Please check your Firebase setup.`;
       }
       setError(friendlyError);
     } finally {
@@ -75,7 +122,7 @@ export const Auth: React.FC = () => {
 
   return (
     <div className="auth-container d-flex justify-content-center align-items-center" style={{ position: "relative", overflow: "hidden" }}>
-
+      <div id="vanta-waves-background" className="vanta-bg"></div>
       <div className="auth-card card shadow-lg p-4 p-md-5">
         <div className="auth-header text-center mb-4">
           <h1 className="auth-title h2 fw-bold text-white mb-2">Pixelcode</h1>

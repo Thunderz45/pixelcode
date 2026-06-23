@@ -3,14 +3,13 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAGOyW48JLICSL_H2X1Lrp3UKsDbcHWprw",
-  authDomain: "pixelaistudio.firebaseapp.com",
-  databaseURL: "https://pixelaistudio-default-rtdb.firebaseio.com",
-  projectId: "pixelaistudio",
-  storageBucket: "pixelaistudio.firebasestorage.app",
-  messagingSenderId: "469623232368",
-  appId: "1:469623232368:web:57aa8aca7418243d8721b5",
-  measurementId: "G-MK9VBRJZ2Z"
+  apiKey: "AIzaSyAnXesqJDXHosbNurgQ50hzoZo0kmQK5kU",
+  authDomain: "pixelcode-e1472.firebaseapp.com",
+  projectId: "pixelcode-e1472",
+  storageBucket: "pixelcode-e1472.firebasestorage.app",
+  messagingSenderId: "46899148156",
+  appId: "1:46899148156:web:f6b40ca8e96c302714e0f9",
+  measurementId: "G-4FQD2VW92G"
 };
 
 // Initialize Firebase

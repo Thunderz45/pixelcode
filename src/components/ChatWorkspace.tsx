@@ -29,6 +29,7 @@ export const ChatWorkspace: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [abortController, setAbortController] = useState<AbortController | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [firestoreError, setFirestoreError] = useState<string | null>(null);
 
   // New enhancements states
   const [projects, setProjects] = useState<Project[]>(() => {
@@ -58,6 +59,7 @@ export const ChatWorkspace: React.FC = () => {
     setChats([]);
     setActiveChatId(null);
     setProfile(null);
+    setFirestoreError(null);
     try {
       const data = localStorage.getItem(`pixelcode_projects_${userId}`);
       setProjects(data ? JSON.parse(data) : []);
@@ -74,9 +76,17 @@ export const ChatWorkspace: React.FC = () => {
 
   // Subscribe to user usage and subscription profile details
   useEffect(() => {
-    const unsubscribe = subscribeToUserProfile(userId, (updatedProfile) => {
-      setProfile(updatedProfile);
-    });
+    const unsubscribe = subscribeToUserProfile(
+      userId,
+      (updatedProfile) => {
+        setProfile(updatedProfile);
+      },
+      (err) => {
+        if (err.message.includes("permission") || err.message.includes("PERMISSION_DENIED")) {
+          setFirestoreError("Firestore permission error: Please copy the config from firestore.rules and apply it in Firebase Console.");
+        }
+      }
+    );
     return () => {
       unsubscribe();
     };
@@ -84,14 +94,22 @@ export const ChatWorkspace: React.FC = () => {
 
   // Subscribe to real-time chats from database
   useEffect(() => {
-    const unsubscribe = subscribeToChats(userId, (updatedChats) => {
-      setChats(updatedChats);
-      
-      // Auto-select the most recent chat if none is active and chats exist
-      if (updatedChats.length > 0 && !activeChatId) {
-        setActiveChatId(updatedChats[0].id);
+    const unsubscribe = subscribeToChats(
+      userId,
+      (updatedChats) => {
+        setChats(updatedChats);
+        
+        // Auto-select the most recent chat if none is active and chats exist
+        if (updatedChats.length > 0 && !activeChatId) {
+          setActiveChatId(updatedChats[0].id);
+        }
+      },
+      (err) => {
+        if (err.message.includes("permission") || err.message.includes("PERMISSION_DENIED")) {
+          setFirestoreError("Firestore permission error: Please copy the config from firestore.rules and apply it in Firebase Console.");
+        }
       }
-    });
+    );
 
     return () => {
       unsubscribe();
@@ -100,9 +118,17 @@ export const ChatWorkspace: React.FC = () => {
 
   // Subscribe to real-time projects from database
   useEffect(() => {
-    const unsubscribe = subscribeToProjects(userId, (updatedProjects) => {
-      setProjects(updatedProjects);
-    });
+    const unsubscribe = subscribeToProjects(
+      userId,
+      (updatedProjects) => {
+        setProjects(updatedProjects);
+      },
+      (err) => {
+        if (err.message.includes("permission") || err.message.includes("PERMISSION_DENIED")) {
+          setFirestoreError("Firestore permission error: Please copy the config from firestore.rules and apply it in Firebase Console.");
+        }
+      }
+    );
     return () => {
       unsubscribe();
     };
@@ -445,7 +471,39 @@ export const ChatWorkspace: React.FC = () => {
         }}
       />
 
-      <main className="workspace-content">
+      <main className="workspace-content" style={{ display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>
+        {firestoreError && (
+          <div 
+            className="firestore-error-banner"
+            style={{
+              background: "rgba(239, 68, 68, 0.15)",
+              borderBottom: "1px solid rgba(239, 68, 68, 0.3)",
+              color: "#fca5a5",
+              padding: "10px 20px",
+              fontSize: "0.85rem",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              zIndex: 10,
+              backdropFilter: "blur(8px)"
+            }}
+          >
+            <span>⚠️ <strong>Database Sync Issue:</strong> {firestoreError}</span>
+            <button 
+              onClick={() => setFirestoreError(null)}
+              style={{
+                background: "none",
+                border: "none",
+                color: "#fff",
+                cursor: "pointer",
+                fontWeight: "bold",
+                opacity: 0.8
+              }}
+            >
+              ✕
+            </button>
+          </div>
+        )}
         <ChatArea
           chatTitle={chatTitle}
           messages={currentMessages}
