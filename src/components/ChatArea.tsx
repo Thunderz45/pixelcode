@@ -397,9 +397,19 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                         },
                       }}
                     >
-                      {cleanContent}
+                      {cleanContent.replace("[UI_GENERATION_IN_PROGRESS]", "")}
                     </ReactMarkdown>
                   </div>
+                  
+                  {cleanContent.includes("[UI_GENERATION_IN_PROGRESS]") && (
+                    <div className="image-generation-loader mt-3">
+                      <div className="image-generation-shimmer"></div>
+                      <div className="image-generation-content d-flex align-items-center justify-content-center gap-2">
+                        <Activity size={18} className="text-white" />
+                        <span className="fw-medium text-white" style={{ letterSpacing: "1px", fontSize: "0.85rem" }}>GENERATING UI DESIGN...</span>
+                      </div>
+                    </div>
+                  )}
 
                   {isAssistant && (
                     <div className="assistant-message-actions d-flex align-items-center gap-1 mt-2">

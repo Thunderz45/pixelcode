@@ -564,4 +564,57 @@
   box-shadow: 0 0 12px rgba(245, 158, 11, 0.25) !important;
 }
 
+/* Image Generation Custom Loader */
+.image-generation-loader {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  height: 200px;
+  border-radius: 12px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.05));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 12px;
+  margin-bottom: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
 
+.image-generation-shimmer {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(99, 102, 241, 0.2),
+    rgba(168, 85, 247, 0.3),
+    transparent
+  );
+  animation: shimmer 1.5s infinite ease-in-out;
+}
+
+@keyframes shimmer {
+  100% {
+    left: 200%;
+  }
+}
+
+.image-generation-content {
+  z-index: 2;
+  animation: pulse-opacity 2s infinite ease-in-out;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 10px 16px;
+  border-radius: 30px;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@keyframes pulse-opacity {
+  0%, 100% { opacity: 0.6; transform: scale(0.98); }
+  50% { opacity: 1; transform: scale(1); }
+}

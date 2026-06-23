@@ -358,7 +358,7 @@ export const ChatWorkspace: React.FC = () => {
 
       if (activeChat?.agent === "uiux") {
         // Step 2: Append loading message and generate image using the generated prompt
-        const loadingContent = streamedContent + "\n\n![Generating...](https://raw.githubusercontent.com/n3r4zzurr0/svg-spinners/main/preview/90-ring-with-bg.svg)\n*Generating high-fidelity UI design...*";
+        const loadingContent = streamedContent + "\n\n[UI_GENERATION_IN_PROGRESS]";
         setChats(prevChats => 
           prevChats.map(c => {
             if (c.id === currentId) {
