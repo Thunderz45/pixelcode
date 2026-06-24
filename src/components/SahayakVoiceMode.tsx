@@ -234,19 +234,24 @@ export const SahayakVoiceMode: React.FC<SahayakVoiceModeProps> = ({
     window.speechSynthesis.cancel();
 
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 1.05;
-    utterance.pitch = 1;
-    utterance.volume = 1;
+    utterance.rate = 0.98; // Warm, professional pacing
+    utterance.pitch = 1.0;
+    utterance.volume = 1.0;
 
-    // Prefer a natural-sounding English voice
+    // Prefer a highly professional, natural-sounding English voice (especially high-fidelity macOS premium/enhanced voices)
     const voices = window.speechSynthesis.getVoices();
     const preferredVoice =
-      voices.find(
-        (v) => v.name.includes("Google") && v.lang.startsWith("en")
-      ) ||
-      voices.find(
-        (v) => v.lang.startsWith("en-") && v.name.includes("Natural")
-      ) ||
+      voices.find((v) => v.name.includes("Google US English") && v.lang.startsWith("en")) ||
+      voices.find((v) => v.name.includes("Google UK English Female") && v.lang.startsWith("en")) ||
+      voices.find((v) => v.name.includes("Google UK English Male") && v.lang.startsWith("en")) ||
+      voices.find((v) => v.name.includes("Ava") && v.lang.startsWith("en")) ||
+      voices.find((v) => v.name.includes("Samantha") && v.name.includes("Enhanced") && v.lang.startsWith("en")) ||
+      voices.find((v) => v.name.includes("Allison") && v.name.includes("Enhanced") && v.lang.startsWith("en")) ||
+      voices.find((v) => v.name.includes("Samantha") && v.lang.startsWith("en")) ||
+      voices.find((v) => v.name.includes("Daniel") && v.lang.startsWith("en")) ||
+      voices.find((v) => v.name.includes("Natural") && v.lang.startsWith("en")) ||
+      voices.find((v) => v.name.includes("Premium") && v.lang.startsWith("en")) ||
+      voices.find((v) => v.lang.startsWith("en-US")) ||
       voices.find((v) => v.lang.startsWith("en-"));
     if (preferredVoice) utterance.voice = preferredVoice;
 
