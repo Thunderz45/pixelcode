@@ -378,36 +378,115 @@
 
 /* Mobile Responsive Styling Overrides */
 @media (max-width: 576px) {
+  .chat-header {
+    padding: 0 8px !important;
+    height: 48px !important;
+  }
+  
+  .chat-header-title {
+    gap: 6px !important;
+    max-width: 70%;
+  }
+
+  .chat-header-name {
+    font-size: 0.85rem !important;
+    max-width: 110px;
+    display: inline-block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+  }
+
+  .chat-header-title span[style*="font-size: 0.75rem"] {
+    font-size: 0.65rem !important;
+    padding: 1px 6px !important;
+  }
+
+  .sahayak-voice-trigger-btn {
+    padding: 6px !important;
+    border-radius: 50% !important;
+    gap: 0 !important;
+  }
+
+  .sahayak-voice-trigger-btn span {
+    display: none !important;
+  }
+
+  .header-action-btn {
+    display: none !important;
+  }
+
+  .messages-container {
+    padding: 12px 8px !important;
+    gap: 16px !important;
+  }
+
   .welcome-title {
-    font-size: 1.5rem !important;
+    font-size: 1.4rem !important;
     padding: 0 12px;
   }
   
   .input-container {
-    padding: 8px 8px 12px 8px !important;
+    padding: 6px 6px 10px 6px !important;
   }
   
   .input-form-wrapper {
     padding: 8px 12px !important;
-    border-radius: 20px !important;
+    border-radius: 16px !important;
   }
   
   .chat-textarea {
     font-size: 0.9rem !important;
+    min-height: 20px !important;
   }
   
   .message-row {
     padding: 0 4px;
   }
 
+  .message-bubble {
+    max-width: 95% !important;
+  }
+
   .message-row.user .message-bubble {
-    max-width: 85% !important;
+    max-width: 90% !important;
     padding: 8px 12px !important;
     font-size: 0.9rem !important;
   }
 
   .markdown-content {
     font-size: 0.9rem !important;
+  }
+
+  .model-dropdown {
+    font-size: 0.78rem !important;
+    padding: 4px 6px !important;
+  }
+
+  .toolbar-btn {
+    padding: 4px !important;
+  }
+
+  .input-toolbar {
+    margin-top: 6px !important;
+  }
+
+  .voice-btn-circle, .send-btn, .stop-generation-btn {
+    width: 28px !important;
+    height: 28px !important;
+  }
+
+  .voice-btn-circle svg, .send-btn svg, .stop-generation-btn svg {
+    width: 14px !important;
+    height: 14px !important;
+  }
+
+  .scroll-bottom-btn {
+    bottom: 110px !important;
+    width: 30px !important;
+    height: 30px !important;
+    font-size: 0.95rem !important;
   }
 }
 
