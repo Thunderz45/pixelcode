@@ -92,8 +92,7 @@ ${founderContext}`;
     model: model,
     messages: apiMessages,
     stream: true,
-    temperature: 0.4,
-    max_tokens: 4000
+    temperature: 0.4
   };
 
   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
