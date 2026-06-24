@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Mic, X, Volume2, Loader } from "lucide-react";
+import { Mic, X, Volume2, Loader, Square } from "lucide-react";
 import type { Message } from "../services/groq";
 import "./SahayakVoiceMode.css";
 
@@ -24,13 +24,14 @@ export const SahayakVoiceMode: React.FC<SahayakVoiceModeProps> = ({
 }) => {
   const [state, setState] = useState<VoiceState>("LISTENING");
   const [displayText, setDisplayText] = useState("Listening...");
-  const [spokenMessageId, setSpokenMessageId] = useState<string | null>(null);
 
   const recognitionRef = useRef<any>(null);
   const prevLoadingRef = useRef(false);
   const stateRef = useRef<VoiceState>("LISTENING");
   const mountedRef = useRef(true);
   const restartTimerRef = useRef<any>(null);
+  const spokenTextLengthRef = useRef(0);
+  const currentMessageIdRef = useRef<string | null>(null);
 
   // Keep stateRef in sync
   useEffect(() => {
@@ -72,7 +73,6 @@ export const SahayakVoiceMode: React.FC<SahayakVoiceModeProps> = ({
 
       setState("LISTENING");
       setDisplayText("Listening...");
-      setSpokenMessageId(null);
       prevLoadingRef.current = false;
 
       // Small delay to let the overlay render before starting mic
@@ -177,68 +177,121 @@ export const SahayakVoiceMode: React.FC<SahayakVoiceModeProps> = ({
     }
   };
 
-  // Watch for AI streaming completion (isLoading: true → false)
+  // Watch for AI streaming (sentence-by-sentence reading)
   useEffect(() => {
-    if (
-      prevLoadingRef.current &&
-      !isLoading &&
-      state === "PROCESSING"
-    ) {
-      // AI finished streaming — get the latest assistant message
-      const lastAssistant = [...messages]
-        .reverse()
-        .find((m) => m.role === "assistant");
+    if (!isOpen) return;
 
-      if (lastAssistant && lastAssistant.id !== spokenMessageId) {
-        setSpokenMessageId(lastAssistant.id);
+    // Reset/cancel speech if the user sends a new message
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage && lastMessage.role === "user") {
+      window.speechSynthesis.cancel();
+      spokenTextLengthRef.current = 0;
+      prevLoadingRef.current = isLoading;
+      return;
+    }
 
-        // Clean the text for TTS: strip markdown, code blocks, etc.
-        const cleanText = lastAssistant.content
-          .replace(/<think>[\s\S]*?<\/think>/g, "")
-          .replace(/```[\s\S]*?```/g, " code block ")
-          .replace(/`([^`]+)`/g, "$1")
-          .replace(/!\[.*?\]\(.*?\)/g, "")
-          .replace(/\[([^\]]+)\]\(.*?\)/g, "$1")
-          .replace(/#{1,6}\s/g, "")
-          .replace(/[*_~]/g, "")
-          .replace(/\n{2,}/g, ". ")
-          .replace(/\n/g, " ")
-          .replace(/\s{2,}/g, " ")
-          .trim();
+    // Find the latest assistant message
+    const lastAssistant = [...messages]
+      .reverse()
+      .find((m) => m.role === "assistant");
 
-        if (cleanText) {
-          setState("SPEAKING");
-          // Show truncated display text
-          setDisplayText(
-            cleanText.length > 300
-              ? cleanText.substring(0, 300) + "..."
-              : cleanText
-          );
-          speakText(cleanText);
+    if (!lastAssistant) {
+      prevLoadingRef.current = isLoading;
+      return;
+    }
+
+    // If we have a new assistant message ID, reset character pointer
+    if (currentMessageIdRef.current !== lastAssistant.id) {
+      currentMessageIdRef.current = lastAssistant.id;
+      spokenTextLengthRef.current = 0;
+    }
+
+    // Extract the new text since our last check
+    const rawContent = lastAssistant.content;
+    if (rawContent.length > spokenTextLengthRef.current) {
+      const newSegment = rawContent.substring(spokenTextLengthRef.current);
+
+      // Search for terminators: ". ", "? ", "! ", "\n"
+      let searchIndex = 0;
+      const terminators = [". ", "? ", "! ", "\n"];
+
+      while (searchIndex < newSegment.length) {
+        let earliestTerminatorIndex = -1;
+        let terminatorLength = 0;
+
+        for (const term of terminators) {
+          const idx = newSegment.indexOf(term, searchIndex);
+          if (idx !== -1 && (earliestTerminatorIndex === -1 || idx < earliestTerminatorIndex)) {
+            earliestTerminatorIndex = idx;
+            terminatorLength = term.length;
+          }
+        }
+
+        if (earliestTerminatorIndex !== -1) {
+          const sentencePart = newSegment.substring(searchIndex, earliestTerminatorIndex + terminatorLength);
+          const cleanSentence = cleanTextForTTS(sentencePart);
+          
+          if (cleanSentence) {
+            setState("SPEAKING");
+            setDisplayText(cleanSentence);
+            speakSentence(cleanSentence, false);
+          }
+
+          searchIndex = earliestTerminatorIndex + terminatorLength;
+          spokenTextLengthRef.current += sentencePart.length;
         } else {
-          // Nothing to speak, go back to listening
-          setState("LISTENING");
-          setDisplayText("Listening...");
-          restartTimerRef.current = setTimeout(() => {
-            if (mountedRef.current && stateRef.current === "LISTENING") {
-              startListening();
-            }
-          }, 500);
+          break;
         }
       }
     }
+
+    // If AI finished loading and we've got remaining text
+    if (prevLoadingRef.current && !isLoading) {
+      const rawContent = lastAssistant.content;
+      const remainingText = rawContent.substring(spokenTextLengthRef.current);
+      const cleanRemaining = cleanTextForTTS(remainingText);
+
+      if (cleanRemaining) {
+        setState("SPEAKING");
+        setDisplayText(cleanRemaining);
+        speakSentence(cleanRemaining, true); // true = final sentence
+        spokenTextLengthRef.current = rawContent.length;
+      } else {
+        // If there's no remaining text to speak, transition back to listening
+        setState("LISTENING");
+        setDisplayText("Listening...");
+        restartTimerRef.current = setTimeout(() => {
+          if (mountedRef.current && stateRef.current === "LISTENING") {
+            startListening();
+          }
+        }, 500);
+      }
+    }
+
     prevLoadingRef.current = isLoading;
-  }, [isLoading, state, messages, spokenMessageId]);
+  }, [isLoading, messages, isOpen]);
 
-  const speakText = (text: string) => {
-    window.speechSynthesis.cancel();
+  const cleanTextForTTS = (content: string): string => {
+    return content
+      .replace(/<think>[\s\S]*?<\/think>/g, "")
+      .replace(/```[\s\S]*?```/g, " code block ")
+      .replace(/`([^`]+)`/g, "$1")
+      .replace(/!\[.*?\]\(.*?\)/g, "")
+      .replace(/\[([^\]]+)\]\(.*?\)/g, "$1")
+      .replace(/#{1,6}\s/g, "")
+      .replace(/[*_~]/g, "")
+      .replace(/\n{2,}/g, ". ")
+      .replace(/\n/g, " ")
+      .replace(/\s{2,}/g, " ")
+      .trim();
+  };
 
+  const speakSentence = (text: string, isFinal: boolean) => {
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = 0.98; // Warm, professional pacing
     utterance.pitch = 1.0;
     utterance.volume = 1.0;
 
-    // Prefer a highly professional, natural-sounding English voice (especially high-fidelity macOS premium/enhanced voices)
     const voices = window.speechSynthesis.getVoices();
     const preferredVoice =
       voices.find((v) => v.name.includes("Google US English") && v.lang.startsWith("en")) ||
@@ -255,34 +308,50 @@ export const SahayakVoiceMode: React.FC<SahayakVoiceModeProps> = ({
       voices.find((v) => v.lang.startsWith("en-"));
     if (preferredVoice) utterance.voice = preferredVoice;
 
-    utterance.onend = () => {
-      if (!mountedRef.current) return;
-      if (stateRef.current === "SPEAKING") {
-        setState("LISTENING");
-        setDisplayText("Listening...");
-        // Delay before restarting mic to prevent audio feedback
-        restartTimerRef.current = setTimeout(() => {
-          if (mountedRef.current && stateRef.current === "LISTENING") {
-            startListening();
-          }
-        }, 600);
-      }
-    };
+    if (isFinal) {
+      utterance.onend = () => {
+        if (!mountedRef.current) return;
+        if (stateRef.current === "SPEAKING") {
+          setState("LISTENING");
+          setDisplayText("Listening...");
+          // Delay before restarting mic to prevent audio feedback
+          restartTimerRef.current = setTimeout(() => {
+            if (mountedRef.current && stateRef.current === "LISTENING") {
+              startListening();
+            }
+          }, 600);
+        }
+      };
 
-    utterance.onerror = () => {
-      if (!mountedRef.current) return;
-      if (stateRef.current === "SPEAKING") {
-        setState("LISTENING");
-        setDisplayText("Listening...");
-        restartTimerRef.current = setTimeout(() => {
-          if (mountedRef.current && stateRef.current === "LISTENING") {
-            startListening();
-          }
-        }, 600);
-      }
-    };
+      utterance.onerror = () => {
+        if (!mountedRef.current) return;
+        if (stateRef.current === "SPEAKING") {
+          setState("LISTENING");
+          setDisplayText("Listening...");
+          restartTimerRef.current = setTimeout(() => {
+            if (mountedRef.current && stateRef.current === "LISTENING") {
+              startListening();
+            }
+          }, 600);
+        }
+      };
+    }
 
     window.speechSynthesis.speak(utterance);
+  };
+
+  const handleStopSpeaking = () => {
+    window.speechSynthesis.cancel();
+    spokenTextLengthRef.current = 0;
+    if (mountedRef.current) {
+      setState("LISTENING");
+      setDisplayText("Listening...");
+      restartTimerRef.current = setTimeout(() => {
+        if (mountedRef.current && stateRef.current === "LISTENING") {
+          startListening();
+        }
+      }, 500);
+    }
   };
 
   const stopEverything = () => {
@@ -303,7 +372,6 @@ export const SahayakVoiceMode: React.FC<SahayakVoiceModeProps> = ({
     stopEverything();
     setState("LISTENING");
     setDisplayText("");
-    setSpokenMessageId(null);
     onTranscriptChange?.(""); // Clear transcription on close
     onClose();
   };
@@ -337,7 +405,12 @@ export const SahayakVoiceMode: React.FC<SahayakVoiceModeProps> = ({
         </div>
 
         {/* The orb */}
-        <div className={`sahayak-voice-orb state-${state.toLowerCase()}`}>
+        <div 
+          className={`sahayak-voice-orb state-${state.toLowerCase()}`}
+          onClick={state === "SPEAKING" ? handleStopSpeaking : undefined}
+          style={state === "SPEAKING" ? { cursor: "pointer" } : undefined}
+          title={state === "SPEAKING" ? "Click orb to stop speaking" : undefined}
+        >
           <div className="sahayak-voice-orb-inner">
             {state === "LISTENING" && <Mic size={24} />}
             {state === "PROCESSING" && (
@@ -390,7 +463,16 @@ export const SahayakVoiceMode: React.FC<SahayakVoiceModeProps> = ({
         <div className="sahayak-voice-hint">
           {state === "LISTENING" && "🎤 Speak now — I'm listening"}
           {state === "PROCESSING" && "⏳ Processing..."}
-          {state === "SPEAKING" && "🔇 AI speaking"}
+          {state === "SPEAKING" && (
+            <button 
+              className="sahayak-voice-stop-btn"
+              onClick={handleStopSpeaking}
+              title="Stop Speaking"
+            >
+              <Square size={10} fill="currentColor" style={{ marginRight: "4px" }} />
+              Stop Voice
+            </button>
+          )}
         </div>
       </div>
 
