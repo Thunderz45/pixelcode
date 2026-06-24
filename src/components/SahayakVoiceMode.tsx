@@ -11,6 +11,7 @@ interface SahayakVoiceModeProps {
   onSendMessage: (content: string) => void;
   isLoading: boolean;
   messages: Message[];
+  onTranscriptChange?: (text: string) => void;
 }
 
 export const SahayakVoiceMode: React.FC<SahayakVoiceModeProps> = ({
@@ -19,6 +20,7 @@ export const SahayakVoiceMode: React.FC<SahayakVoiceModeProps> = ({
   onSendMessage,
   isLoading,
   messages,
+  onTranscriptChange,
 }) => {
   const [state, setState] = useState<VoiceState>("LISTENING");
   const [displayText, setDisplayText] = useState("Listening...");
@@ -123,6 +125,7 @@ export const SahayakVoiceMode: React.FC<SahayakVoiceModeProps> = ({
       const display = finalText || interim;
       if (display && mountedRef.current) {
         setDisplayText(display);
+        onTranscriptChange?.(display);
       }
     };
 
@@ -135,6 +138,7 @@ export const SahayakVoiceMode: React.FC<SahayakVoiceModeProps> = ({
         setState("PROCESSING");
         setDisplayText(text);
         onSendMessage(text);
+        onTranscriptChange?.(""); // Clear input when message is sent
       } else if (stateRef.current === "LISTENING") {
         // No speech detected → restart after a short delay
         restartTimerRef.current = setTimeout(() => {
@@ -295,20 +299,21 @@ export const SahayakVoiceMode: React.FC<SahayakVoiceModeProps> = ({
     setState("LISTENING");
     setDisplayText("");
     setSpokenMessageId(null);
+    onTranscriptChange?.(""); // Clear transcription on close
     onClose();
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="sahayak-voice-overlay" id="sahayak-voice-overlay">
+    <div className="sahayak-voice-widget" id="sahayak-voice-widget">
       {/* Close button */}
       <button
         className="sahayak-voice-close"
         onClick={handleClose}
         title="End Voice Conversation"
       >
-        <X size={24} />
+        <X size={16} />
       </button>
 
       {/* Brand */}
@@ -329,11 +334,11 @@ export const SahayakVoiceMode: React.FC<SahayakVoiceModeProps> = ({
         {/* The orb */}
         <div className={`sahayak-voice-orb state-${state.toLowerCase()}`}>
           <div className="sahayak-voice-orb-inner">
-            {state === "LISTENING" && <Mic size={44} />}
+            {state === "LISTENING" && <Mic size={24} />}
             {state === "PROCESSING" && (
-              <Loader size={44} className="sahayak-voice-spinner" />
+              <Loader size={24} className="sahayak-voice-spinner" />
             )}
-            {state === "SPEAKING" && <Volume2 size={44} />}
+            {state === "SPEAKING" && <Volume2 size={24} />}
           </div>
 
           {/* Pulse rings for LISTENING */}
@@ -379,8 +384,8 @@ export const SahayakVoiceMode: React.FC<SahayakVoiceModeProps> = ({
         {/* Hint text */}
         <div className="sahayak-voice-hint">
           {state === "LISTENING" && "🎤 Speak now — I'm listening"}
-          {state === "PROCESSING" && "⏳ Processing your message..."}
-          {state === "SPEAKING" && "🔇 Mic is muted while Sahayak speaks"}
+          {state === "PROCESSING" && "⏳ Processing..."}
+          {state === "SPEAKING" && "🔇 AI speaking"}
         </div>
       </div>
 
@@ -389,9 +394,9 @@ export const SahayakVoiceMode: React.FC<SahayakVoiceModeProps> = ({
         <div className={`sahayak-state-indicator state-${state.toLowerCase()}`}>
           <div className="sahayak-state-dot" />
           <span>
-            {state === "LISTENING" && "Microphone ON — AI Muted"}
-            {state === "PROCESSING" && "Processing — Please wait"}
-            {state === "SPEAKING" && "Microphone OFF — AI Active"}
+            {state === "LISTENING" && "Mic ON — AI Muted"}
+            {state === "PROCESSING" && "Processing"}
+            {state === "SPEAKING" && "Mic OFF — AI Active"}
           </span>
         </div>
       </div>

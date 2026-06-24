@@ -312,12 +312,17 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
         <div className="chat-header-actions d-flex align-items-center gap-2">
           {activeAgent === 'sahayak' && (
             <button 
-              className="sahayak-voice-trigger-btn"
-              onClick={() => setVoiceModeOpen(true)}
-              title="Start Voice Conversation"
+              className={`sahayak-voice-trigger-btn ${voiceModeOpen ? "active" : ""}`}
+              onClick={() => setVoiceModeOpen(!voiceModeOpen)}
+              title={voiceModeOpen ? "Stop Voice Mode" : "Start Voice Mode"}
+              style={voiceModeOpen ? {
+                background: "rgba(16, 185, 129, 0.25)",
+                borderColor: "#10b981",
+                boxShadow: "0 0 12px rgba(16, 185, 129, 0.3)"
+              } : undefined}
             >
               <AudioLines size={15} />
-              <span>Voice</span>
+              <span>{voiceModeOpen ? "Voice Active" : "Voice"}</span>
             </button>
           )}
           <button className="header-action-btn" title="Activity Wave">
@@ -635,15 +640,31 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
             </div>
 
             <div className="d-flex align-items-center gap-2">
-              <button
-                type="button"
-                className={`voice-btn-circle ${isListening ? "listening" : ""}`}
-                onClick={toggleListening}
-                title={isListening ? "Stop listening" : "Dictate message"}
-                disabled={isLoading}
-              >
-                {isListening ? <MicOff size={16} /> : <Mic size={16} />}
-              </button>
+              {activeAgent === 'sahayak' ? (
+                <button
+                  type="button"
+                  className={`voice-btn-circle sahayak-voice-toggle ${voiceModeOpen ? "active" : ""}`}
+                  onClick={() => setVoiceModeOpen(!voiceModeOpen)}
+                  title={voiceModeOpen ? "Disable Sahayak Voice Mode" : "Enable Sahayak Voice Mode"}
+                  style={{
+                    backgroundColor: voiceModeOpen ? "#10b981" : undefined,
+                    boxShadow: voiceModeOpen ? "0 0 10px rgba(16, 185, 129, 0.4)" : undefined,
+                    color: "#fff"
+                  }}
+                >
+                  <AudioLines size={16} />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className={`voice-btn-circle ${isListening ? "listening" : ""}`}
+                  onClick={toggleListening}
+                  title={isListening ? "Stop listening" : "Dictate message"}
+                  disabled={isLoading}
+                >
+                  {isListening ? <MicOff size={16} /> : <Mic size={16} />}
+                </button>
+              )}
 
               <button type="submit" className="send-btn" disabled={!input.trim() || isLoading}>
                 <Send size={16} />
@@ -655,16 +676,17 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
           Pixelcode. Powered by Pixelstudio & OpenRouter.
         </p>
       </div>
-    </div>
 
-    {/* Sahayak Voice Mode Overlay */}
-    <SahayakVoiceMode
-      isOpen={voiceModeOpen}
-      onClose={() => setVoiceModeOpen(false)}
-      onSendMessage={onSendMessage}
-      isLoading={isLoading}
-      messages={messages}
-    />
+      {/* Sahayak Voice Mode Compact Floating Widget */}
+      <SahayakVoiceMode
+        isOpen={voiceModeOpen}
+        onClose={() => setVoiceModeOpen(false)}
+        onSendMessage={onSendMessage}
+        isLoading={isLoading}
+        messages={messages}
+        onTranscriptChange={setInput}
+      />
+    </div>
     </>
   );
 };

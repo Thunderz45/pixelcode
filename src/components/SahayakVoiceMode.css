@@ -1,47 +1,48 @@
 /* =============================================
-   SAHAYAK VOICE MODE — Full-Screen Overlay
+   SAHAYAK VOICE MODE — In-Context Floating Widget
    ============================================= */
 
-.sahayak-voice-overlay {
-  position: fixed;
-  inset: 0;
-  background: radial-gradient(
-      ellipse at 50% 40%,
-      rgba(16, 185, 129, 0.08) 0%,
-      rgba(0, 0, 0, 0.97) 70%
-    ),
-    #000000;
-  backdrop-filter: blur(60px);
-  -webkit-backdrop-filter: blur(60px);
-  z-index: 9999;
+.sahayak-voice-widget {
+  position: absolute;
+  bottom: 110px;
+  right: 24px;
+  width: 250px;
+  background: rgba(10, 10, 10, 0.85);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.65), 0 0 20px rgba(16, 185, 129, 0.1);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 20px;
+  z-index: 100;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  animation: sahayak-overlay-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  padding: 16px;
+  padding-top: 48px; /* Leave space for close button and brand */
+  animation: sahayak-widget-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-@keyframes sahayak-overlay-in {
+@keyframes sahayak-widget-in {
   from {
     opacity: 0;
-    transform: scale(1.05);
+    transform: translateY(15px) scale(0.95);
   }
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: translateY(0) scale(1);
   }
 }
 
 /* Close Button */
 .sahayak-voice-close {
   position: absolute;
-  top: 24px;
-  right: 24px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  top: 12px;
+  right: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   color: #a1a1aa;
-  width: 48px;
-  height: 48px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -61,23 +62,23 @@
 /* Brand */
 .sahayak-voice-brand {
   position: absolute;
-  top: 32px;
-  left: 32px;
-  font-size: 0.9rem;
+  top: 16px;
+  left: 16px;
+  font-size: 0.8rem;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.6);
   letter-spacing: 0.5px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .sahayak-voice-brand-dot {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: #10b981;
-  box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
   animation: sahayak-brand-pulse 2s ease-in-out infinite;
 }
 
@@ -92,18 +93,16 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 32px;
+  gap: 16px;
   text-align: center;
-  padding: 24px;
-  max-width: 600px;
   width: 100%;
 }
 
 /* State Label */
 .sahayak-voice-state-label {
-  font-size: 0.75rem;
+  font-size: 0.62rem;
   font-weight: 700;
-  letter-spacing: 3px;
+  letter-spacing: 2px;
   text-transform: uppercase;
   transition: color 0.3s ease;
 }
@@ -126,16 +125,17 @@
 
 .sahayak-voice-orb {
   position: relative;
-  width: 160px;
-  height: 160px;
+  width: 80px;
+  height: 80px;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 6px 0;
 }
 
 .sahayak-voice-orb-inner {
-  width: 120px;
-  height: 120px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -150,15 +150,15 @@
   background: linear-gradient(135deg, #10b981, #059669);
   color: #ffffff;
   box-shadow: 
-    0 0 40px rgba(16, 185, 129, 0.4),
-    0 0 80px rgba(16, 185, 129, 0.15),
-    inset 0 -4px 12px rgba(0, 0, 0, 0.2);
+    0 0 20px rgba(16, 185, 129, 0.4),
+    0 0 40px rgba(16, 185, 129, 0.15),
+    inset 0 -2px 6px rgba(0, 0, 0, 0.2);
   animation: sahayak-orb-breathe 2.5s ease-in-out infinite;
 }
 
 @keyframes sahayak-orb-breathe {
   0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.06); }
+  50% { transform: scale(1.05); }
 }
 
 /* PROCESSING state orb */
@@ -166,9 +166,9 @@
   background: linear-gradient(135deg, #7c3aed, #a78bfa);
   color: #ffffff;
   box-shadow: 
-    0 0 40px rgba(124, 58, 237, 0.35),
-    0 0 80px rgba(124, 58, 237, 0.1),
-    inset 0 -4px 12px rgba(0, 0, 0, 0.2);
+    0 0 20px rgba(124, 58, 237, 0.35),
+    0 0 40px rgba(124, 58, 237, 0.1),
+    inset 0 -2px 6px rgba(0, 0, 0, 0.2);
 }
 
 /* SPEAKING state orb */
@@ -176,9 +176,9 @@
   background: linear-gradient(135deg, #0ea5e9, #38bdf8);
   color: #ffffff;
   box-shadow: 
-    0 0 40px rgba(14, 165, 233, 0.4),
-    0 0 80px rgba(14, 165, 233, 0.15),
-    inset 0 -4px 12px rgba(0, 0, 0, 0.2);
+    0 0 20px rgba(14, 165, 233, 0.4),
+    0 0 40px rgba(14, 165, 233, 0.15),
+    inset 0 -2px 6px rgba(0, 0, 0, 0.2);
   animation: sahayak-orb-speak-pulse 1.5s ease-in-out infinite;
 }
 
@@ -205,10 +205,10 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 120px;
-  height: 120px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
-  border: 2px solid rgba(16, 185, 129, 0.4);
+  border: 1.5px solid rgba(16, 185, 129, 0.4);
   transform: translate(-50%, -50%) scale(1);
   animation: sahayak-pulse-expand 3s ease-out infinite;
 }
@@ -231,7 +231,7 @@
     opacity: 0.6;
   }
   100% {
-    transform: translate(-50%, -50%) scale(2.5);
+    transform: translate(-50%, -50%) scale(1.8);
     opacity: 0;
   }
 }
@@ -244,10 +244,10 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 140px;
-  height: 140px;
+  width: 68px;
+  height: 68px;
   border-radius: 50%;
-  border: 2px solid transparent;
+  border: 1.5px solid transparent;
   border-top-color: #a78bfa;
   border-right-color: rgba(167, 139, 250, 0.3);
   transform: translate(-50%, -50%);
@@ -265,29 +265,29 @@
 
 .sahayak-sound-waves {
   position: absolute;
-  bottom: -40px;
+  bottom: -20px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   align-items: flex-end;
-  gap: 4px;
-  height: 28px;
+  gap: 3px;
+  height: 18px;
 }
 
 .sahayak-wave-bar {
-  width: 4px;
-  border-radius: 4px;
+  width: 3px;
+  border-radius: 3px;
   background: linear-gradient(to top, #0ea5e9, #38bdf8);
   animation: sahayak-wave 1.2s ease-in-out infinite;
 }
 
-.sahayak-wave-bar.bar-1 { height: 8px; animation-delay: 0s; }
-.sahayak-wave-bar.bar-2 { height: 16px; animation-delay: 0.1s; }
-.sahayak-wave-bar.bar-3 { height: 24px; animation-delay: 0.2s; }
-.sahayak-wave-bar.bar-4 { height: 28px; animation-delay: 0.3s; }
-.sahayak-wave-bar.bar-5 { height: 24px; animation-delay: 0.2s; }
-.sahayak-wave-bar.bar-6 { height: 16px; animation-delay: 0.1s; }
-.sahayak-wave-bar.bar-7 { height: 8px; animation-delay: 0s; }
+.sahayak-wave-bar.bar-1 { height: 6px; animation-delay: 0s; }
+.sahayak-wave-bar.bar-2 { height: 12px; animation-delay: 0.1s; }
+.sahayak-wave-bar.bar-3 { height: 16px; animation-delay: 0.2s; }
+.sahayak-wave-bar.bar-4 { height: 18px; animation-delay: 0.3s; }
+.sahayak-wave-bar.bar-5 { height: 16px; animation-delay: 0.2s; }
+.sahayak-wave-bar.bar-6 { height: 12px; animation-delay: 0.1s; }
+.sahayak-wave-bar.bar-7 { height: 6px; animation-delay: 0s; }
 
 @keyframes sahayak-wave {
   0%, 100% { transform: scaleY(0.4); opacity: 0.5; }
@@ -299,38 +299,38 @@
    ============================================= */
 
 .sahayak-voice-transcript {
-  min-height: 60px;
+  min-height: 36px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  max-width: 520px;
+  gap: 6px;
   width: 100%;
 }
 
 .sahayak-voice-text {
-  font-size: 1.05rem;
+  font-size: 0.82rem;
   font-weight: 400;
   color: rgba(255, 255, 255, 0.75);
-  line-height: 1.6;
+  line-height: 1.4;
   margin: 0;
-  max-height: 120px;
+  max-height: 50px;
   overflow-y: auto;
   text-align: center;
+  width: 100%;
 }
 
 /* Stream dots animation */
 .sahayak-voice-stream-dots {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 8px;
+  gap: 4px;
+  margin-bottom: 4px;
 }
 
 .sahayak-voice-stream-dots span {
-  width: 6px;
-  height: 6px;
+  width: 4px;
+  height: 4px;
   border-radius: 50%;
   background: #a78bfa;
   animation: sahayak-stream-dot 1.4s ease-in-out infinite both;
@@ -350,7 +350,7 @@
    ============================================= */
 
 .sahayak-voice-hint {
-  font-size: 0.82rem;
+  font-size: 0.72rem;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.35);
   letter-spacing: 0.3px;
@@ -361,21 +361,21 @@
    ============================================= */
 
 .sahayak-voice-footer {
-  position: absolute;
-  bottom: 32px;
-  left: 50%;
-  transform: translateX(-50%);
+  margin-top: 12px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 .sahayak-state-indicator {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 20px;
-  border-radius: 100px;
-  font-size: 0.78rem;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 50px;
+  font-size: 0.7rem;
   font-weight: 600;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
   border: 1px solid;
   transition: all 0.3s ease;
 }
@@ -399,8 +399,8 @@
 }
 
 .sahayak-state-dot {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   background: currentColor;
   animation: sahayak-state-blink 1.5s ease-in-out infinite;
@@ -416,49 +416,10 @@
    ============================================= */
 
 @media (max-width: 576px) {
-  .sahayak-voice-close {
-    top: 16px;
-    right: 16px;
-    width: 40px;
-    height: 40px;
-  }
-
-  .sahayak-voice-brand {
-    top: 20px;
-    left: 20px;
-    font-size: 0.8rem;
-  }
-
-  .sahayak-voice-orb-inner {
-    width: 100px;
-    height: 100px;
-  }
-
-  .sahayak-voice-orb-inner svg {
-    width: 36px;
-    height: 36px;
-  }
-
-  .sahayak-pulse-ring {
-    width: 100px;
-    height: 100px;
-  }
-
-  .sahayak-processing-ring {
-    width: 120px;
-    height: 120px;
-  }
-
-  .sahayak-voice-text {
-    font-size: 0.95rem;
-  }
-
-  .sahayak-voice-footer {
-    bottom: 20px;
-  }
-
-  .sahayak-state-indicator {
-    font-size: 0.7rem;
-    padding: 6px 14px;
+  .sahayak-voice-widget {
+    bottom: 90px;
+    left: 12px;
+    right: 12px;
+    width: auto;
   }
 }
