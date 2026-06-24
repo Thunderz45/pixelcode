@@ -17,7 +17,8 @@ import {
   Plus, 
   Settings,
   HeartHandshake,
-  AudioLines
+  AudioLines,
+  Square
 } from "lucide-react";
 import { auth } from "../firebase";
 import type { Message } from "../services/groq";
@@ -30,6 +31,7 @@ interface ChatAreaProps {
   messages: Message[];
   isLoading: boolean;
   onSendMessage: (content: string) => void;
+  onStopGeneration?: () => void;
   onToggleSidebar: () => void;
   onRegenerateMessage?: (messageId: string) => void;
   onDeleteMessage?: (messageId: string) => void;
@@ -45,6 +47,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
   messages,
   isLoading,
   onSendMessage,
+  onStopGeneration,
   onToggleSidebar,
   onRegenerateMessage,
   onDeleteMessage,
@@ -666,9 +669,33 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                 </button>
               )}
 
-              <button type="submit" className="send-btn" disabled={!input.trim() || isLoading}>
-                <Send size={16} />
-              </button>
+              {isLoading ? (
+                <button
+                  type="button"
+                  className="stop-generation-btn"
+                  onClick={onStopGeneration}
+                  title="Stop generating"
+                  style={{
+                    backgroundColor: "#ef4444",
+                    color: "#ffffff",
+                    border: "none",
+                    width: "32px",
+                    height: "32px",
+                    borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
+                    transition: "background-color 0.2s"
+                  }}
+                >
+                  <Square size={12} fill="currentColor" />
+                </button>
+              ) : (
+                <button type="submit" className="send-btn" disabled={!input.trim()}>
+                  <Send size={16} />
+                </button>
+              )}
             </div>
           </div>
         </form>

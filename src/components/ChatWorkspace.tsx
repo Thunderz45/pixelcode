@@ -267,6 +267,14 @@ export const ChatWorkspace: React.FC = () => {
     await handleSendMessage(lastUserMessage.content);
   };
 
+  const handleStopGeneration = () => {
+    if (abortController) {
+      abortController.abort();
+      setIsLoading(false);
+      setAbortController(null);
+    }
+  };
+
   const handleSendMessage = async (content: string) => {
 
     const currentId = activeChatId || Math.random().toString(36).substring(2, 15);
@@ -617,6 +625,7 @@ export const ChatWorkspace: React.FC = () => {
           messages={currentMessages}
           isLoading={isLoading}
           onSendMessage={handleSendMessage}
+          onStopGeneration={handleStopGeneration}
           onToggleSidebar={toggleSidebar}
           onRegenerateMessage={handleRegenerateMessage}
           onDeleteMessage={handleDeleteMessage}

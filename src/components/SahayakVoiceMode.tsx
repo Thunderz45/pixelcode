@@ -280,6 +280,8 @@ export const SahayakVoiceMode: React.FC<SahayakVoiceModeProps> = ({
       .replace(/\[([^\]]+)\]\(.*?\)/g, "$1")
       .replace(/#{1,6}\s/g, "")
       .replace(/[*_~]/g, "")
+      .replace(/->|=>/g, " to ")
+      .replace(/^\s*[-*+]\s+/gm, "")
       .replace(/\n{2,}/g, ". ")
       .replace(/\n/g, " ")
       .replace(/\s{2,}/g, " ")
@@ -293,19 +295,26 @@ export const SahayakVoiceMode: React.FC<SahayakVoiceModeProps> = ({
     utterance.volume = 1.0;
 
     const voices = window.speechSynthesis.getVoices();
-    const preferredVoice =
-      voices.find((v) => v.name.includes("Google US English") && v.lang.startsWith("en")) ||
-      voices.find((v) => v.name.includes("Google UK English Female") && v.lang.startsWith("en")) ||
-      voices.find((v) => v.name.includes("Google UK English Male") && v.lang.startsWith("en")) ||
-      voices.find((v) => v.name.includes("Ava") && v.lang.startsWith("en")) ||
-      voices.find((v) => v.name.includes("Samantha") && v.name.includes("Enhanced") && v.lang.startsWith("en")) ||
-      voices.find((v) => v.name.includes("Allison") && v.name.includes("Enhanced") && v.lang.startsWith("en")) ||
-      voices.find((v) => v.name.includes("Samantha") && v.lang.startsWith("en")) ||
-      voices.find((v) => v.name.includes("Daniel") && v.lang.startsWith("en")) ||
-      voices.find((v) => v.name.includes("Natural") && v.lang.startsWith("en")) ||
-      voices.find((v) => v.name.includes("Premium") && v.lang.startsWith("en")) ||
-      voices.find((v) => v.lang.startsWith("en-US")) ||
-      voices.find((v) => v.lang.startsWith("en-"));
+    
+    // Select the absolute best English voice available using a premium quality rating scale
+    const preferredVoice = voices.reduce((best: any, current: any) => {
+      if (!current.lang.startsWith("en")) return best;
+      
+      const getScore = (voice: any) => {
+        const name = voice.name;
+        if (name.includes("Siri")) return 100;
+        if (name.includes("Natural") || name.includes("Enhanced") || name.includes("Premium")) return 90;
+        if (name.includes("Google US English") || name.includes("Google UK English Female")) return 85;
+        if (name.includes("Ava") || name.includes("Samantha") || name.includes("Allison") || name.includes("Daniel") || name.includes("Kate") || name.includes("Serena") || name.includes("Oliver")) return 80;
+        if (name.includes("Google") && voice.lang.startsWith("en")) return 70;
+        if (voice.lang.startsWith("en-US") || voice.lang.startsWith("en-GB")) return 60;
+        return 50;
+      };
+      
+      if (!best) return current;
+      return getScore(current) > getScore(best) ? current : best;
+    }, null);
+
     if (preferredVoice) utterance.voice = preferredVoice;
 
     if (isFinal) {
