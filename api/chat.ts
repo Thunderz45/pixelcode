@@ -40,7 +40,8 @@ export default async function handler(req: Request): Promise<Response> {
         model: model,
         messages: messages,
         stream: true,
-        temperature: 0.2
+        temperature: 0.2,
+        max_tokens: 2000
       })
     });
 

@@ -65,7 +65,8 @@ ${founderContext}`;
     model: model,
     messages: apiMessages,
     stream: true,
-    temperature: 0.2
+    temperature: 0.2,
+    max_tokens: 2000
   };
 
   const response = await fetch(url, {
