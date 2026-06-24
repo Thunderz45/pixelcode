@@ -274,8 +274,8 @@ export const SahayakVoiceMode: React.FC<SahayakVoiceModeProps> = ({
   const cleanTextForTTS = (content: string): string => {
     return content
       .replace(/<think>[\s\S]*?<\/think>/g, "")
-      .replace(/```[\s\S]*?```/g, " code block ")
-      .replace(/`([^`]+)`/g, "$1")
+      .replace(/```[\s\S]*?```/g, "")
+      .replace(/`([^`]+)`/g, "")
       .replace(/!\[.*?\]\(.*?\)/g, "")
       .replace(/\[([^\]]+)\]\(.*?\)/g, "$1")
       .replace(/#{1,6}\s/g, "")
