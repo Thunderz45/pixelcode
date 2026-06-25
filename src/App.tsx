@@ -5,6 +5,7 @@ import { Auth } from "./components/Auth";
 import { LandingPage } from "./components/LandingPage";
 import { ChatWorkspace } from "./components/ChatWorkspace";
 import { Terminal } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import "./App.css";
 
 function App() {
@@ -16,6 +17,9 @@ function App() {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setAuthLoading(false);
+      if (!currentUser) {
+        setShowAuth(false);
+      }
     });
 
     return () => unsubscribe();
@@ -75,15 +79,46 @@ function App() {
     );
   }
 
-  if (user) {
-    return <ChatWorkspace />;
-  }
-
-  if (showAuth) {
-    return <Auth onBack={() => setShowAuth(false)} />;
-  }
-
-  return <LandingPage onTryPixelCode={() => setShowAuth(true)} />;
+  return (
+    <div style={{ width: "100vw", height: "100vh", overflow: "hidden", position: "relative" }}>
+      <AnimatePresence mode="wait">
+        {user ? (
+          <motion.div
+            key="workspace"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            style={{ width: "100%", height: "100%" }}
+          >
+            <ChatWorkspace />
+          </motion.div>
+        ) : showAuth ? (
+          <motion.div
+            key="auth"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            style={{ width: "100%", height: "100%" }}
+          >
+            <Auth onBack={() => setShowAuth(false)} />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="landing"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            style={{ width: "100%", height: "100%" }}
+          >
+            <LandingPage onTryPixelCode={() => setShowAuth(true)} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
 }
 
 export default App;
