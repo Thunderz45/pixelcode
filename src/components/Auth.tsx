@@ -7,7 +7,11 @@ import {
 import { auth } from "../firebase";
 import "./Auth.css";
 
-export const Auth: React.FC = () => {
+interface AuthProps {
+  onBack?: () => void;
+}
+
+export const Auth: React.FC<AuthProps> = ({ onBack }) => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -121,24 +125,34 @@ export const Auth: React.FC = () => {
   };
 
   return (
-    <div className="auth-container d-flex justify-content-center align-items-center" style={{ position: "relative", overflow: "hidden" }}>
+    <div className="auth-container">
       <div id="vanta-waves-background" className="vanta-bg"></div>
-      <div className="auth-card card shadow-lg p-4 p-md-5">
-        <div className="auth-header text-center mb-4">
-          <h1 className="auth-title h2 fw-bold text-white mb-2">Pixelcode</h1>
-          <p className="auth-subtitle text-secondary small">
+      <div className="auth-card">
+        <div className="auth-header">
+          {onBack && (
+            <button 
+              type="button" 
+              className="auth-back-btn" 
+              onClick={onBack}
+              title="Back to Landing Page"
+            >
+              &larr; Back
+            </button>
+          )}
+          <h1 className="auth-title">Pixelcode</h1>
+          <p className="auth-subtitle">
             {isSignUp ? "Create an account to start coding" : "Welcome back, developer"}
           </p>
         </div>
 
-        <form className="auth-form d-flex flex-column gap-3" onSubmit={handleSubmit}>
+        <form className="auth-form" onSubmit={handleSubmit}>
           {isSignUp && (
-            <div className="form-group d-flex flex-column">
-              <label className="form-label text-light small mb-1" htmlFor="displayName">Name (Optional)</label>
+            <div className="form-group">
+              <label className="form-label" htmlFor="displayName">Name (Optional)</label>
               <input
                 id="displayName"
                 type="text"
-                className="form-control form-input bg-dark text-white border-secondary"
+                className="form-input"
                 placeholder="Enter your name"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
@@ -147,12 +161,12 @@ export const Auth: React.FC = () => {
             </div>
           )}
 
-          <div className="form-group d-flex flex-column">
-            <label className="form-label text-light small mb-1" htmlFor="email">Email</label>
+          <div className="form-group">
+            <label className="form-label" htmlFor="email">Email</label>
             <input
               id="email"
               type="email"
-              className="form-control form-input bg-dark text-white border-secondary"
+              className="form-input"
               placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -161,12 +175,12 @@ export const Auth: React.FC = () => {
             />
           </div>
 
-          <div className="form-group d-flex flex-column">
-            <label className="form-label text-light small mb-1" htmlFor="password">Password</label>
+          <div className="form-group">
+            <label className="form-label" htmlFor="password">Password</label>
             <input
               id="password"
               type="password"
-              className="form-control form-input bg-dark text-white border-secondary"
+              className="form-input"
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -176,12 +190,12 @@ export const Auth: React.FC = () => {
           </div>
 
           {isSignUp && (
-            <div className="form-group d-flex flex-column">
-              <label className="form-label text-light small mb-1" htmlFor="confirmPassword">Confirm Password</label>
+            <div className="form-group">
+              <label className="form-label" htmlFor="confirmPassword">Confirm Password</label>
               <input
                 id="confirmPassword"
                 type="password"
-                className="form-control form-input bg-dark text-white border-secondary"
+                className="form-input"
                 placeholder="••••••••"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -191,16 +205,16 @@ export const Auth: React.FC = () => {
             </div>
           )}
 
-          {error && <div className="auth-error alert alert-danger py-2 px-3 small border-0">{error}</div>}
+          {error && <div className="auth-error">{error}</div>}
 
-          <button type="submit" className="auth-submit-btn btn btn-light w-100 py-2.5 mt-2 fw-semibold" disabled={loading}>
+          <button type="submit" className="auth-submit-btn" disabled={loading}>
             {loading ? "Processing..." : isSignUp ? "Create Account" : "Sign In"}
           </button>
         </form>
 
-        <div className="auth-footer text-center mt-4 small text-secondary">
+        <div className="auth-footer">
           <span>{isSignUp ? "Already have an account?" : "Don't have an account?"}</span>
-          <button type="button" className="auth-toggle-link btn btn-link text-white p-0 fs-7 text-decoration-none fw-semibold ms-2 align-baseline" onClick={toggleAuthMode}>
+          <button type="button" className="auth-toggle-link" onClick={toggleAuthMode}>
             {isSignUp ? "Sign In" : "Sign Up"}
           </button>
         </div>
