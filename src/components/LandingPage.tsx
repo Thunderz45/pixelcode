@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { 
   Terminal, 
   BookOpen, 
@@ -15,6 +15,7 @@ interface LandingPageProps {
 }
 
 export function LandingPage({ onTryPixelCode }: LandingPageProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
   const [activeLink, setActiveLink] = useState("Home");
 
@@ -36,7 +37,7 @@ export function LandingPage({ onTryPixelCode }: LandingPageProps) {
   const navLinks = ["Home", "Features", "Pricing", "Blog", "Contact"];
 
   return (
-    <div className="landing-container">
+    <div className="landing-container" ref={containerRef}>
       {/* Background grid + radial glow details */}
       <div className="grid-overlay"></div>
       <div className="radial-glow-hero"></div>
@@ -60,9 +61,15 @@ export function LandingPage({ onTryPixelCode }: LandingPageProps) {
                   e.preventDefault();
                   setActiveLink(link);
                   if (link === "Home") {
-                    window.scrollTo({ top: 0, behavior: "smooth" });
+                    containerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
                   } else if (link === "Features") {
-                    document.getElementById("features")?.scrollIntoView({ behavior: "smooth" });
+                    const el = document.getElementById("features");
+                    if (el && containerRef.current) {
+                      containerRef.current.scrollTo({
+                        top: el.offsetTop - 100, // 100px offset for sticky header
+                        behavior: "smooth"
+                      });
+                    }
                   }
                 }}
               >
