@@ -40,7 +40,28 @@
   position: relative;
 }
 
+.auth-back-btn {
+  position: absolute;
+  top: -8px;
+  left: 0;
+  background: none;
+  border: none;
+  color: var(--color-cyan);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 4px var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all var(--transition-fast);
+}
 
+.auth-back-btn:hover {
+  background-color: rgba(0, 220, 229, 0.08);
+  box-shadow: 0 0 6px rgba(0, 220, 229, 0.15);
+}
 
 .auth-title {
   font-family: var(--font-headline);
