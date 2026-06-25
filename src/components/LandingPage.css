@@ -1,7 +1,7 @@
 /* Redesigned Landing Page Styles matching DESIGN.md and screen.png */
 
 .landing-container {
-  min-height: 100vh;
+  height: 100vh;
   width: 100vw;
   background-color: #131314; /* surface background */
   color: #e5e2e3; /* on-surface color */
