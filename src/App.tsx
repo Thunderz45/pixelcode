@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { onAuthStateChanged, type User } from "firebase/auth";
 import { auth } from "./firebase";
 import { Auth } from "./components/Auth";
-import { LandingPage } from "./components/LandingPage";
 import { ChatWorkspace } from "./components/ChatWorkspace";
 import { Terminal } from "lucide-react";
 import "./App.css";
@@ -10,7 +9,6 @@ import "./App.css";
 function App() {
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
-  const [showAuth, setShowAuth] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -79,11 +77,7 @@ function App() {
     return <ChatWorkspace />;
   }
 
-  if (showAuth) {
-    return <Auth onBack={() => setShowAuth(false)} />;
-  }
-
-  return <LandingPage onTryPixelCode={() => setShowAuth(true)} />;
+  return <Auth />;
 }
 
 export default App;

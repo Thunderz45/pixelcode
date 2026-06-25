@@ -7,11 +7,7 @@ import {
 import { auth } from "../firebase";
 import "./Auth.css";
 
-interface AuthProps {
-  onBack?: () => void;
-}
-
-export const Auth: React.FC<AuthProps> = ({ onBack }) => {
+export const Auth: React.FC = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -129,16 +125,6 @@ export const Auth: React.FC<AuthProps> = ({ onBack }) => {
       <div id="vanta-waves-background" className="vanta-bg"></div>
       <div className="auth-card">
         <div className="auth-header">
-          {onBack && (
-            <button 
-              type="button" 
-              className="auth-back-btn" 
-              onClick={onBack}
-              title="Back to Landing Page"
-            >
-              &larr; Back
-            </button>
-          )}
           <h1 className="auth-title">Pixelcode</h1>
           <p className="auth-subtitle">
             {isSignUp ? "Create an account to start coding" : "Welcome back, developer"}
