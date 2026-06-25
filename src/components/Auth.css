@@ -7,6 +7,7 @@
   padding: var(--spacing-lg);
   background-color: var(--bg-primary);
   position: relative;
+  overflow-y: auto;
 }
 
 .vanta-bg {
