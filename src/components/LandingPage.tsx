@@ -18,6 +18,8 @@ import Lottie from "lottie-react";
 import heroAnimation from "../assets/hero-animation.json";
 import "./LandingPage.css";
 
+const LottieComponent = (Lottie as any).default || Lottie;
+
 interface LandingPageProps {
   onTryPixelCode: () => void;
 }
@@ -265,7 +267,7 @@ export function OwlAssistant() {
                   <span className="bar-title">owl_alpha_vision_engine.bin</span>
                 </div>
                 <div className="animation-body">
-                  <Lottie animationData={heroAnimation} loop={true} />
+                  <LottieComponent animationData={heroAnimation} loop={true} />
                 </div>
               </div>
             </div>
