@@ -46,7 +46,7 @@
   left: 0;
   background: none;
   border: none;
-  color: var(--color-cyan);
+  color: #ffffff;
   font-family: var(--font-mono);
   font-size: 12px;
   cursor: pointer;
@@ -59,8 +59,8 @@
 }
 
 .auth-back-btn:hover {
-  background-color: rgba(0, 220, 229, 0.08);
-  box-shadow: 0 0 6px rgba(0, 220, 229, 0.15);
+  background-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.1);
 }
 
 .auth-title {
@@ -115,8 +115,8 @@
 
 .form-input:focus {
   outline: none;
-  border-color: var(--color-cyan);
-  box-shadow: var(--shadow-glow);
+  border-color: #ffffff;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.1);
 }
 
 .form-input::placeholder {
@@ -135,8 +135,8 @@
 }
 
 .auth-submit-btn {
-  background-color: var(--color-cyan);
-  color: var(--bg-primary);
+  background-color: #ffffff;
+  color: #131314;
   border: none;
   border-radius: var(--radius-md);
   padding: 12px;
@@ -153,7 +153,7 @@
 
 .auth-submit-btn:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 0 12px var(--color-cyan-glow);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.2);
 }
 
 .auth-submit-btn:active:not(:disabled) {
@@ -174,14 +174,14 @@
 }
 
 .auth-toggle-link {
-  color: var(--color-cyan);
+  color: #ffffff;
   background: none;
   border: none;
   font-family: var(--font-sans);
   font-size: inherit;
   font-weight: 600;
   cursor: pointer;
-  transition: color var(--transition-fast);
+  transition: opacity var(--transition-fast);
   margin-left: 5px;
   padding: 0;
   text-decoration: underline;
@@ -189,5 +189,5 @@
 }
 
 .auth-toggle-link:hover {
-  color: #ffffff;
+  opacity: 0.8;
 }
