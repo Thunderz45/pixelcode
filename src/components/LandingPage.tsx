@@ -62,8 +62,9 @@ export function LandingPage({ onTryPixelCode }: LandingPageProps) {
                   setActiveLink(link);
                   if (link === "Home") {
                     containerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
-                  } else if (link === "Features") {
-                    const el = document.getElementById("features");
+                  } else {
+                    const sectionId = link.toLowerCase();
+                    const el = document.getElementById(sectionId);
                     if (el && containerRef.current) {
                       containerRef.current.scrollTo({
                         top: el.offsetTop - 100, // 100px offset for sticky header
@@ -210,6 +211,170 @@ export function LandingPage({ onTryPixelCode }: LandingPageProps) {
                   view telemetry &rarr;
                 </div>
               </div>
+            </div>
+          </section>
+
+          {/* Section: Pricing */}
+          <section id="pricing" className="pricing-section">
+            <div className="features-header">
+              <h2 className="features-title">Simple, Predictable Pricing</h2>
+              <p className="features-subtitle">
+                Start building for free, upgrade as you scale.
+              </p>
+            </div>
+
+            <div className="pricing-grid">
+              {/* Plan 1: Developer */}
+              <div className="pricing-card">
+                <div className="plan-name font-mono">DEVELOPER</div>
+                <div className="plan-price">
+                  <span className="price-symbol">$</span>0<span className="price-period">/mo</span>
+                </div>
+                <p className="plan-desc">For individual developers and testing integrations.</p>
+                <ul className="plan-features font-mono">
+                  <li>● 1 active workspace</li>
+                  <li>● 100 queries / day</li>
+                  <li>● Standard edge deploys</li>
+                  <li>● Basic community support</li>
+                </ul>
+                <button className="pricing-action-btn secondary-btn" onClick={onTryPixelCode}>
+                  Current Plan
+                </button>
+              </div>
+
+              {/* Plan 2: Pro */}
+              <div className="pricing-card featured">
+                <div className="plan-badge-highlight font-mono">COMING SOON</div>
+                <div className="plan-name font-mono">PRO_ENGINE</div>
+                <div className="plan-price">
+                  <span className="price-symbol">$</span>29<span className="price-period">/mo</span>
+                </div>
+                <p className="plan-desc">For power developers and fast-paced teams.</p>
+                <ul className="plan-features font-mono">
+                  <li>● Unlimited workspaces</li>
+                  <li>● Unlimited agent queries</li>
+                  <li>● Advanced vision-to-code</li>
+                  <li>● Priority edge compiler</li>
+                </ul>
+                <button className="pricing-action-btn primary-btn disabled" disabled>
+                  Coming Soon
+                </button>
+              </div>
+
+              {/* Plan 3: Enterprise */}
+              <div className="pricing-card">
+                <div className="plan-badge-highlight font-mono">COMING SOON</div>
+                <div className="plan-name font-mono">ENTERPRISE</div>
+                <div className="plan-price font-mono">CUSTOM</div>
+                <p className="plan-desc">For organizations requiring security and custom setups.</p>
+                <ul className="plan-features font-mono">
+                  <li>● Dedicated clusters</li>
+                  <li>● Custom model training</li>
+                  <li>● 99.9% uptime SLA</li>
+                  <li>● 24/7 priority support</li>
+                </ul>
+                <button className="pricing-action-btn secondary-btn disabled" disabled>
+                  Coming Soon
+                </button>
+              </div>
+            </div>
+          </section>
+
+          {/* Section: Blog */}
+          <section id="blog" className="blog-section">
+            <div className="features-header">
+              <h2 className="features-title">From the Engine Room</h2>
+              <p className="features-subtitle">
+                Technical deep-dives, product updates, and architecture insights.
+              </p>
+            </div>
+
+            <div className="blog-grid">
+              {/* Blog Post 1 */}
+              <article className="blog-card">
+                <div className="blog-tag font-mono text-cyan">ENGINE</div>
+                <h3 className="blog-title font-mono">Rewriting compiler in Rust: A 10x speedup story</h3>
+                <p className="blog-excerpt">
+                  How we replaced our core TypeScript compiler routines with high-performance Rust bindings to achieve ultra-fast edge compiles.
+                </p>
+                <div className="blog-footer">
+                  <span className="blog-date font-mono">June 24, 2026</span>
+                  <span className="blog-readmore font-mono">read article &rarr;</span>
+                </div>
+              </article>
+
+              {/* Blog Post 2 */}
+              <article className="blog-card">
+                <div className="blog-tag font-mono text-violet">PRODUCT</div>
+                <h3 className="blog-title font-mono">Introducing vision React code generation pipelines</h3>
+                <p className="blog-excerpt">
+                  Deploying state-of-the-art vision reasoning models to compile sketches and UI screenshots directly to functional React typescript.
+                </p>
+                <div className="blog-footer">
+                  <span className="blog-date font-mono">June 18, 2026</span>
+                  <span className="blog-readmore font-mono">read article &rarr;</span>
+                </div>
+              </article>
+
+              {/* Blog Post 3 */}
+              <article className="blog-card">
+                <div className="blog-tag font-mono text-emerald">ARCHITECTURE</div>
+                <h3 className="blog-title font-mono">Scaling zero-config edge functions globally</h3>
+                <p className="blog-excerpt">
+                  A look under the hood at how we minimize cold starts and route developer requests to the nearest edge node in milliseconds.
+                </p>
+                <div className="blog-footer">
+                  <span className="blog-date font-mono">June 12, 2026</span>
+                  <span className="blog-readmore font-mono">read article &rarr;</span>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          {/* Section: Contact */}
+          <section id="contact" className="contact-section">
+            <div className="features-header">
+              <h2 className="features-title">Get in Touch</h2>
+              <p className="features-subtitle">
+                Have questions about the digital engine? Let's connect.
+              </p>
+            </div>
+
+            <div className="contact-container">
+              <div className="contact-info">
+                <h3 className="info-title font-mono">SYSTEM_DIAGNOSTICS</h3>
+                <p className="info-desc">
+                  Ping our support engineers or send us details of your integration inquiries.
+                </p>
+                <div className="info-list font-mono">
+                  <div className="info-item">
+                    <span className="info-label">SUPPORT:</span>
+                    <span className="info-value">support@pixelcode.dev</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">STATUS:</span>
+                    <span className="info-value text-emerald">PING_OK (24ms)</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">LOCATION:</span>
+                    <span className="info-value">San Francisco, CA</span>
+                  </div>
+                </div>
+              </div>
+
+              <form className="contact-form" onSubmit={(e) => { e.preventDefault(); alert('Message sent successfully!'); }}>
+                <div className="form-group">
+                  <label className="form-label font-mono" htmlFor="email-input">EMAIL_ADDRESS</label>
+                  <input id="email-input" type="email" placeholder="dev@example.com" className="form-input font-mono" required />
+                </div>
+                <div className="form-group">
+                  <label className="form-label font-mono" htmlFor="message-input">MESSAGE_BODY</label>
+                  <textarea id="message-input" rows={4} placeholder="Type your inquiry here..." className="form-input font-mono" required></textarea>
+                </div>
+                <button type="submit" className="contact-submit-btn font-mono">
+                  SEND_MESSAGE &rarr;
+                </button>
+              </form>
             </div>
           </section>
         </main>
