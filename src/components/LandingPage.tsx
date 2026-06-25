@@ -15,7 +15,7 @@ import {
   Play
 } from "lucide-react";
 import Lottie from "lottie-react";
-import heroAnimation from "../../public/hero-animation.json";
+import heroAnimation from "../assets/hero-animation.json";
 import "./LandingPage.css";
 
 interface LandingPageProps {
