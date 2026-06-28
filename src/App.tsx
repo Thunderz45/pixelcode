@@ -4,7 +4,6 @@ import { auth } from "./firebase";
 import { Auth } from "./components/Auth";
 import { LandingPage } from "./components/LandingPage";
 import { ChatWorkspace } from "./components/ChatWorkspace";
-import { Terminal } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import "./App.css";
 
@@ -49,7 +48,7 @@ function App() {
             gap: "8px",
           }}
         >
-          <Terminal size={32} style={{ color: "var(--color-cyan)" }} />
+          <img src="/logo.png" alt="PixelCode Logo" style={{ width: "32px", height: "32px", objectFit: "contain", filter: "drop-shadow(0 0 8px rgba(0, 220, 229, 0.3))" }} />
           <span style={{ fontSize: "1.5rem", fontWeight: 700, fontFamily: "var(--font-headline)", color: "#fff", letterSpacing: "-0.5px" }}>
             PixelCode
           </span>

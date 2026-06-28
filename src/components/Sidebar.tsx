@@ -132,8 +132,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <aside className={`sidebar ${collapsed ? "collapsed" : "open"} d-flex flex-column h-100`}>
       <div className="sidebar-header d-flex flex-column p-3 pb-2">
-        <div className="sidebar-logo text-white px-1 mb-3">
-          pixelcode
+        <div className="sidebar-logo text-white px-1 mb-3 d-flex align-items-center gap-2">
+          <img src="/logo.png" alt="PixelCode Logo" style={{ width: "20px", height: "20px", objectFit: "contain" }} />
+          <span>pixelcode</span>
         </div>
         
         {/* Main Navigation Actions */}

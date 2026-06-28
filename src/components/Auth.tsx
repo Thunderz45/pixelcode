@@ -139,7 +139,10 @@ export const Auth: React.FC<AuthProps> = ({ onBack }) => {
               &larr; Back
             </button>
           )}
-          <h1 className="auth-title">Pixelcode</h1>
+          <div className="d-flex align-items-center justify-content-center gap-2 mb-2">
+            <img src="/logo.png" alt="PixelCode Logo" style={{ width: "36px", height: "36px", objectFit: "contain" }} />
+            <h1 className="auth-title mb-0">Pixelcode</h1>
+          </div>
           <p className="auth-subtitle">
             {isSignUp ? "Create an account to start coding" : "Welcome back, developer"}
           </p>

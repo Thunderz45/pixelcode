@@ -1,6 +1,5 @@
 import { useState, useRef } from "react";
 import { 
-  Terminal, 
   BookOpen, 
   Gauge, 
   Rocket, 
@@ -47,7 +46,7 @@ export function LandingPage({ onTryPixelCode }: LandingPageProps) {
         {/* Header Navigation */}
         <header className="landing-header">
           <div className="logo-container">
-            <Terminal className="logo-icon" size={18} />
+            <img src="/logo.png" alt="PixelCode Logo" className="logo-icon" style={{ width: '20px', height: '20px', objectFit: 'contain' }} />
             <span className="logo-text">Pixel Code</span>
           </div>
 
@@ -383,7 +382,7 @@ export function LandingPage({ onTryPixelCode }: LandingPageProps) {
         <footer className="landing-footer">
           <div className="footer-left">
             <div className="logo-container">
-              <Terminal className="logo-icon" size={18} />
+              <img src="/logo.png" alt="PixelCode Logo" className="logo-icon" style={{ width: '20px', height: '20px', objectFit: 'contain' }} />
               <span className="logo-text">Pixel Code</span>
             </div>
             <p className="footer-copyright">
